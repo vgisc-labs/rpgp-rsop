@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
+# SPDX-License-Identifier: CC0-1.0
+
+[package]
+name = "rpgpie-sop"
+description = "Experimental SOP implementation based on rpgpie"
+license = "MIT OR Apache-2.0"
+version = "0.1.0"
+authors = ["Heiko Schaefer <heiko@schaefer.name>"]
+edition = "2021"
+repository = "https://codeberg.org/heiko/rsop"
+
+[lib]
+
+[dependencies]
+chrono = "0.4"
+hex = "0.4"
+pgp = "0.11"
+rand = "0.8"
+rand_core = "0.6"
+rpgpie = "0.0.1"
+sop = "0.7"

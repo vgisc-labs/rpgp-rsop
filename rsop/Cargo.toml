@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
+# SPDX-License-Identifier: CC0-1.0
+
+[package]
+name = "rsop"
+description = "SOP CLI tool based on rpgp and rpgpie"
+license = "CC0-1.0"
+version = "0.1.0"
+authors = ["Heiko Schaefer <heiko@schaefer.name>"]
+edition = "2021"
+repository = "https://codeberg.org/heiko/rsop"
+
+[dependencies]
+env_logger = "0.11"
+rpgpie-sop = { version = "0.1", path = "../rpgpie-sop" }
+sop = "0.7"
+
+[features]
+default = ["cli"]
+cli = ["sop/cli"]
