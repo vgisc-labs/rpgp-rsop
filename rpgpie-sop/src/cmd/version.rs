@@ -20,12 +20,15 @@ impl sop::ops::Version<'_> for Version {
     fn backend(&self) -> sop::Result<sop::ops::VersionInfo> {
         Ok(sop::ops::VersionInfo {
             name: "rpgpie".into(),
-            version: rpgpie::VERSION.into(),
+            version: format!("{} (rpgp {})", rpgpie::VERSION, rpgpie::RPGP_VERSION),
         })
     }
 
-    // FIXME: Is there a way to get the actual rpgp version reported, here?
     fn extended(&self) -> sop::Result<String> {
-        Ok([""].join("\n"))
+        Ok([
+            format!("rpgpie {}", rpgpie::VERSION),
+            format!("rpgp {}", rpgpie::RPGP_VERSION),
+        ]
+        .join("\n"))
     }
 }
