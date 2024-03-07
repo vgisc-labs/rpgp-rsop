@@ -41,6 +41,10 @@ Or, alternatively, you can run `rsop` directly from this repository:
 $ cargo run -- generate-key "<alice@example.org>"
 ```
 
+## OpenPGP interoperability test suite
+
+`rsop` is included in the [OpenPGP interoperability test suite](https://tests.sequoia-pgp.org/), which tests the features of implementations, adherence to expectations, as well as interoperation between a large set of implementations.
+
 ## Rust SOP interface
 
 The `rsop` CLI tool is built using the excellent <https://crates.io/crates/sop> framework. The `rsop` binary is trivially derived from [rpgpie-sop](https://crates.io/crates/rpgpie-sop).
