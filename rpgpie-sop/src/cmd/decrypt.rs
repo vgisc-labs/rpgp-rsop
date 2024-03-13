@@ -141,13 +141,16 @@ impl<'a> sop::ops::Ready<(Option<sop::SessionKey>, Vec<sop::ops::Verification>)>
                 .map(sop::plumbing::PasswordsAreHumanReadable::normalized)
                 .collect();
 
-            let mr = rpgpie::msg::unpack(
+            let Ok(mr) = rpgpie::msg::unpack(
                 msg,
                 &self.decrypt.decryption_keys,
                 key_passwords,
                 skesk_passwords,
                 &self.decrypt.verify.certs,
-            );
+            ) else {
+                // FIXME: probably the password(s) were wrong, but this is a bit of a guess
+                return Err(sop::errors::Error::KeyIsProtected);
+            };
 
             let session_key = mr
                 .session_key

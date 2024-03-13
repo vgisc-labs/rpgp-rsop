@@ -103,7 +103,8 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
             // Regular inline message
             let (msg, _header) = Message::from_armor_single(c).unwrap();
 
-            let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], &self.inline_verify.certs);
+            let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], &self.inline_verify.certs)
+                .expect("FIXME");
             sink.write_all(mr.cleartext.data()).expect("FIXME");
 
             if mr.validated.is_empty() {
