@@ -8,7 +8,7 @@ use pgp::crypto::hash::HashAlgorithm;
 use pgp::packet::LiteralData;
 use pgp::Message;
 use rpgpie::key::checked::CheckedCertificate;
-use rpgpie::key::component::ComponentKeySec;
+use rpgpie::key::component::{ComponentKeySec, SignedComponentKey};
 use rpgpie::key::{Certificate, Tsk};
 
 use crate::{Keys, Sigs, RPGSOP};
@@ -105,16 +105,41 @@ impl<'a> sop::ops::Sign<'a, RPGSOP, Keys, Sigs> for Sign {
 
         let mut sigs = vec![];
 
+        // Passwords to try
+        let pws: Vec<&[u8]> = if self.with_key_password.is_empty() {
+            vec![&[]]
+        } else {
+            self.with_key_password
+                .iter()
+                .map(sop::plumbing::PasswordsAreHumanReadable::normalized)
+                .collect()
+        };
+
         for tsk in self.signers {
             for signer in tsk.signing_capable_component_keys() {
-                match ComponentKeySec::from(&signer).sign_msg(
-                    msg.clone(),
-                    String::default,
-                    hash_algo,
-                ) {
-                    Ok(Message::Signed { signature, .. }) => sigs.push(signature),
-                    Err(e) => eprintln!("Error while signing: {}", e),
-                    _ => panic!("FIXME"),
+                let sig = pws
+                    .iter()
+                    .flat_map(|pw| {
+                        ComponentKeySec::from(&signer).sign_msg(
+                            msg.clone(),
+                            || String::from_utf8_lossy(pw).to_string(),
+                            hash_algo,
+                        )
+                    })
+                    .next();
+
+                match sig {
+                    Some(Message::Signed { signature, .. }) => sigs.push(signature),
+                    Some(_) => panic!("Unexpected message type while signing: {:?}", sig),
+                    None => {
+                        eprintln!(
+                            "Couldn't sign with signer key {:02x?}",
+                            SignedComponentKey::from(&signer).fingerprint()
+                        );
+
+                        // FIXME: probably the password(s) were wrong, but this is a bit of a guess
+                        return Err(sop::errors::Error::KeyIsProtected);
+                    }
                 };
             }
         }

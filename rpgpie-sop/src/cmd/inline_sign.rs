@@ -101,6 +101,18 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
 
         assert!(!self.inline_sign.sign.signers.is_empty()); // FIXME
 
+        // Passwords to try
+        let pws: Vec<&[u8]> = if self.inline_sign.sign.with_key_password.is_empty() {
+            vec![&[]]
+        } else {
+            self.inline_sign
+                .sign
+                .with_key_password
+                .iter()
+                .map(sop::plumbing::PasswordsAreHumanReadable::normalized)
+                .collect()
+        };
+
         let mut signers: Vec<ComponentKeySec> = vec![];
         for tsk in self.inline_sign.sign.signers {
             let mut s: Vec<ComponentKeySec> = tsk
@@ -118,8 +130,6 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
             signers.append(&mut s);
         }
 
-        // FIXME: handle key passwords
-
         let lit = match &self.inline_sign.mode {
             sop::ops::InlineSignAs::Binary => LiteralData::from_bytes("".into(), &data),
             sop::ops::InlineSignAs::Text => {
@@ -128,7 +138,9 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
             sop::ops::InlineSignAs::ClearSigned => {
                 let body = String::from_utf8(data).expect("foo");
 
-                let csf = CleartextSignedMessage::sign(&body, signers, hash_algo);
+                let s: Vec<_> = signers.into_iter().map(|s| (s, pws.as_slice())).collect();
+
+                let csf = CleartextSignedMessage::sign(&body, s, hash_algo).expect("FIXME");
                 csf.write(&mut sink);
 
                 return Ok(());
@@ -138,9 +150,22 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
         let mut signed = Message::Literal(lit);
 
         for signer in signers {
-            signed = signer
-                .sign_msg(signed, String::default, hash_algo)
-                .expect("FIXME");
+            let sig = pws
+                .iter()
+                .flat_map(|pw| {
+                    signer.sign_msg(
+                        signed.clone(),
+                        || String::from_utf8_lossy(pw).to_string(),
+                        hash_algo,
+                    )
+                })
+                .next();
+
+            if let Some(sig) = sig {
+                signed = sig;
+            } else {
+                panic!("foo");
+            }
         }
 
         match self.inline_sign.armor {
