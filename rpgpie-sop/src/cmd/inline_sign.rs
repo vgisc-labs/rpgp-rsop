@@ -6,7 +6,7 @@ use std::io;
 use pgp::packet::LiteralData;
 use pgp::ser::Serialize;
 use pgp::types::KeyTrait;
-use pgp::Message;
+use pgp::{ArmorOptions, Message};
 use rpgpie::key::component::ComponentKeySec;
 use rpgpie::msg::csf::CleartextSignedMessage;
 
@@ -169,7 +169,9 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
         }
 
         match self.inline_sign.armor {
-            true => signed.to_armored_writer(&mut sink, None).expect("FIXME"),
+            true => signed
+                .to_armored_writer(&mut sink, ArmorOptions::default())
+                .expect("FIXME"),
             false => signed.to_writer(&mut sink).expect("FIXME"),
         }
 
