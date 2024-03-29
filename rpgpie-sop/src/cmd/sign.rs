@@ -8,7 +8,6 @@ use pgp::crypto::hash::HashAlgorithm;
 use pgp::packet::LiteralData;
 use pgp::Message;
 use rpgpie::key::checked::CheckedCertificate;
-use rpgpie::key::component::{ComponentKeySec, SignedComponentKey};
 use rpgpie::key::{Certificate, Tsk};
 
 use crate::{Keys, Sigs, RPGSOP};
@@ -120,7 +119,7 @@ impl<'a> sop::ops::Sign<'a, RPGSOP, Keys, Sigs> for Sign {
                 let sig = pws
                     .iter()
                     .flat_map(|pw| {
-                        ComponentKeySec::from(&signer).sign_msg(
+                        signer.sign_msg(
                             msg.clone(),
                             || String::from_utf8_lossy(pw).to_string(),
                             hash_algo,
@@ -134,7 +133,7 @@ impl<'a> sop::ops::Sign<'a, RPGSOP, Keys, Sigs> for Sign {
                     None => {
                         eprintln!(
                             "Couldn't sign with signer key {:02x?}",
-                            SignedComponentKey::from(&signer).fingerprint()
+                            signer.fingerprint()
                         );
 
                         // FIXME: probably the password(s) were wrong, but this is a bit of a guess

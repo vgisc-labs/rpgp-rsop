@@ -7,7 +7,7 @@ use pgp::packet::LiteralData;
 use pgp::ser::Serialize;
 use pgp::types::KeyTrait;
 use pgp::{ArmorOptions, Message};
-use rpgpie::key::component::ComponentKeySec;
+use rpgpie::key::DataSigner;
 use rpgpie::msg::csf::CleartextSignedMessage;
 
 use crate::cmd::sign::Sign;
@@ -113,12 +113,9 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
                 .collect()
         };
 
-        let mut signers: Vec<ComponentKeySec> = vec![];
+        let mut signers: Vec<DataSigner> = vec![];
         for tsk in self.inline_sign.sign.signers {
-            let mut s: Vec<ComponentKeySec> = tsk
-                .signing_capable_component_keys()
-                .map(|key| (&key).into())
-                .collect();
+            let mut s: Vec<DataSigner> = tsk.signing_capable_component_keys().collect();
 
             if s.is_empty() {
                 panic!(
