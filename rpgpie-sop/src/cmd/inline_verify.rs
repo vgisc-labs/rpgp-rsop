@@ -3,6 +3,7 @@
 
 use std::default::Default;
 use std::io;
+use std::io::Cursor;
 
 use pgp::cleartext::CleartextSignedMessage;
 use pgp::packet::LiteralData;
@@ -84,10 +85,11 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
         self: Box<Self>,
         sink: &mut (dyn io::Write + Send + Sync),
     ) -> sop::Result<Vec<sop::ops::Verification>> {
-        // FIXME: process input data in streaming mode
-        let c = util::load(self.data)?;
+        // FIXME: can we read this in streaming mode?
+        let mut input = vec![];
+        self.data.read_to_end(&mut input)?;
 
-        if let Ok((csf, _)) = CleartextSignedMessage::from_bytes(c.clone()) {
+        if let Ok((csf, _)) = CleartextSignedMessage::from_bytes(Cursor::new(input.clone())) {
             // CSF
             let validated: Vec<(Certificate, ComponentKeyPub, pgp::Signature)> = self
                 .inline_verify
@@ -124,7 +126,7 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
             Ok(util::result_to_verifications(&mr))
         } else {
             // Regular inline message
-            let (msg, _header) = Message::from_reader_single(c).unwrap();
+            let (msg, _header) = Message::from_reader_single(Cursor::new(input)).unwrap();
 
             let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], &self.inline_verify.certs)
                 .expect("FIXME");

@@ -106,9 +106,11 @@ impl sop::SOP<'_> for RPGSOP {
 }
 
 impl sop::Load<'_, RPGSOP> for Certs {
-    fn from_reader(_sop: &RPGSOP, source: &mut (dyn io::Read + Send + Sync)) -> sop::Result<Self> {
-        let mut c = util::load(source)?; // FIXME: process the input data in streaming mode?
-        let certs = Certificate::load(&mut c).expect("FIXME");
+    fn from_reader(
+        _sop: &RPGSOP,
+        mut source: &mut (dyn io::Read + Send + Sync),
+    ) -> sop::Result<Self> {
+        let certs = Certificate::load(&mut source).expect("FIXME");
 
         Ok(Certs { certs })
     }
@@ -129,10 +131,9 @@ impl sop::Save for Certs {
 impl sop::Load<'_, RPGSOP> for Keys {
     fn from_reader(
         _sop: &'_ RPGSOP,
-        source: &mut (dyn io::Read + Send + Sync),
+        mut source: &mut (dyn io::Read + Send + Sync),
     ) -> sop::Result<Self> {
-        let mut c = util::load(source)?; // FIXME: process the input data in streaming mode?
-        let keys = Tsk::load(&mut c).expect("FIXME");
+        let keys = Tsk::load(&mut source).expect("FIXME");
 
         Ok(Keys { keys })
     }
@@ -153,10 +154,9 @@ impl sop::Save for Keys {
 impl sop::Load<'_, RPGSOP> for Sigs {
     fn from_reader(
         _sop: &'_ RPGSOP,
-        source: &mut (dyn io::Read + Send + Sync),
+        mut source: &mut (dyn io::Read + Send + Sync),
     ) -> sop::Result<Self> {
-        let mut c = util::load(source)?; // FIXME: process the input data in streaming mode?
-        let sigs = rpgpie::sig::load(&mut c).expect("FIXME");
+        let sigs = rpgpie::sig::load(&mut source).expect("FIXME");
 
         Ok(Sigs { sigs })
     }

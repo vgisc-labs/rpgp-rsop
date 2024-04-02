@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::io::{Cursor, Read};
 use std::time::SystemTime;
 
 use pgp::packet::SignatureType;
@@ -9,18 +8,6 @@ use pgp::Signature;
 use rpgpie::key::component::ComponentKeyPub;
 use rpgpie::key::Certificate;
 use rpgpie::msg::MessageResult;
-
-/// Helper to load all data from a file, and wrap it in a Cursor.
-/// Cursors are convenient for reading with rpgp's reader functions.
-///
-/// FIXME: However, this approach doesn't scale to large input files
-/// (files that don't conveniently fit into RAM must be processed in streaming mode).
-pub(crate) fn load(source: &mut (dyn Read + Send + Sync)) -> sop::Result<Cursor<Vec<u8>>> {
-    let mut input = vec![];
-    source.read_to_end(&mut input)?;
-
-    Ok(Cursor::new(input))
-}
 
 pub(crate) fn to_verification(
     signature: &Signature,

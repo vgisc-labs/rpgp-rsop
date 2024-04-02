@@ -121,8 +121,7 @@ impl<'a> sop::ops::Ready<(Option<sop::SessionKey>, Vec<sop::ops::Verification>)>
         self: Box<Self>,
         sink: &mut (dyn io::Write + Send + Sync),
     ) -> sop::Result<(Option<sop::SessionKey>, Vec<sop::ops::Verification>)> {
-        let c = util::load(self.ciphertext)?; // FIXME: process the input data in streaming mode?
-        let (mut iter, _header) = Message::from_reader_many(c).expect("FIXME");
+        let (mut iter, _header) = Message::from_reader_many(self.ciphertext).expect("FIXME");
 
         if let Some(Ok(msg)) = iter.next() {
             // FIXME: use provided session keys, if any
