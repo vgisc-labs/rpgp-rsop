@@ -4,9 +4,13 @@
 use std::default::Default;
 use std::io;
 
+use pgp::cleartext::CleartextSignedMessage;
+use pgp::packet::LiteralData;
 use pgp::{Deserializable, Message};
+use rpgpie::key::checked::CheckedCertificate;
+use rpgpie::key::component::ComponentKeyPub;
 use rpgpie::key::Certificate;
-use rpgpie::msg::{csf, MessageResult};
+use rpgpie::msg::MessageResult;
 
 use crate::{util, Certs, RPGSOP};
 
@@ -83,19 +87,38 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
         // FIXME: process input data in streaming mode
         let c = util::load(self.data)?;
 
-        if let Ok(csf) = csf::CleartextSignedMessage::read(c.clone()) {
+        if let Ok((csf, _)) = CleartextSignedMessage::from_bytes(c.clone()) {
             // CSF
-            let validated = csf.check(&self.inline_verify.certs);
+            let validated: Vec<(Certificate, ComponentKeyPub, pgp::Signature)> = self
+                .inline_verify
+                .certs
+                .iter()
+                .flat_map(|c| {
+                    let cc: CheckedCertificate = c.into();
+                    let verifiers =
+                        cc.valid_signing_capable_component_keys_at(&chrono::offset::Utc::now());
+                    let verified: Vec<_> = verifiers
+                        .iter()
+                        .flat_map(|v| {
+                            v.verify_csf(&csf).ok().map(|s| {
+                                (c.clone(), v.as_componentkey().clone(), s.clone().signature)
+                            })
+                        })
+                        .collect();
+                    verified
+                })
+                .collect();
+
             if validated.is_empty() {
                 return Err(sop::errors::Error::NoSignature);
             }
 
-            let cleartext = csf.text();
-            sink.write_all(cleartext.data()).expect("FIXME");
+            let text = csf.signed_text();
+            sink.write_all(text.as_bytes()).expect("FIXME");
 
             let mr = MessageResult {
                 session_key: None,
-                cleartext,
+                cleartext: LiteralData::from_str("", &text),
                 validated,
             };
             Ok(util::result_to_verifications(&mr))

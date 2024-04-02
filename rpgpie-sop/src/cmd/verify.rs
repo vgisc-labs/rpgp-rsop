@@ -99,7 +99,7 @@ impl sop::ops::VerifySignatures<'_> for VerifySignatures<'_> {
                     .valid_signing_capable_component_keys_at(reference)
                     .iter()
                     .filter(|c| c.verify(sig, &payload).is_ok())
-                    .map(|ckp| to_verification(sig, cert, ckp))
+                    .map(|v| to_verification(sig, cert, v.as_componentkey()))
                     .for_each(|v| verifications.push(v));
             }
         }

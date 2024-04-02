@@ -8,7 +8,6 @@ use pgp::ser::Serialize;
 use pgp::types::KeyTrait;
 use pgp::{ArmorOptions, Message};
 use rpgpie::key::DataSigner;
-use rpgpie::msg::csf::CleartextSignedMessage;
 
 use crate::cmd::sign::Sign;
 use crate::{Keys, RPGSOP};
@@ -137,8 +136,14 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
 
                 let s: Vec<_> = signers.into_iter().map(|s| (s, pws.as_slice())).collect();
 
-                let csf = CleartextSignedMessage::sign(&body, s, hash_algo).expect("FIXME");
-                csf.write(&mut sink);
+                // FIXME: handle multi-signatures for CSF in rpgpie
+                assert_eq!(s.len(), 1, "currently only exactly one signer is supported");
+                let (ds, pw) = &s[0];
+
+                let csf = ds.sign_csf(&body, pw).expect("FIXME");
+
+                csf.to_armored_writer(&mut sink, ArmorOptions::default())
+                    .expect("FIXME");
 
                 return Ok(());
             }
