@@ -3,11 +3,9 @@
 
 use std::default::Default;
 use std::io;
-use std::io::Cursor;
 
-use pgp::cleartext::CleartextSignedMessage;
 use pgp::packet::LiteralData;
-use pgp::{Deserializable, Message};
+use pgp::Any;
 use rpgpie::key::checked::CheckedCertificate;
 use rpgpie::key::component::ComponentKeyPub;
 use rpgpie::key::Certificate;
@@ -85,58 +83,57 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
         self: Box<Self>,
         sink: &mut (dyn io::Write + Send + Sync),
     ) -> sop::Result<Vec<sop::ops::Verification>> {
-        // FIXME: can we read this in streaming mode?
-        let mut input = vec![];
-        self.data.read_to_end(&mut input)?;
+        let (pgp, _) = pgp::Any::from_armor(self.data).expect("foo");
 
-        if let Ok((csf, _)) = CleartextSignedMessage::from_bytes(Cursor::new(input.clone())) {
-            // CSF
-            let validated: Vec<(Certificate, ComponentKeyPub, pgp::Signature)> = self
-                .inline_verify
-                .certs
-                .iter()
-                .flat_map(|c| {
-                    let cc: CheckedCertificate = c.into();
-                    let verifiers =
-                        cc.valid_signing_capable_component_keys_at(&chrono::offset::Utc::now());
-                    let verified: Vec<_> = verifiers
-                        .iter()
-                        .flat_map(|v| {
-                            v.verify_csf(&csf).ok().map(|s| {
-                                (c.clone(), v.as_componentkey().clone(), s.clone().signature)
+        match pgp {
+            Any::Cleartext(csf) => {
+                // CSF
+                let validated: Vec<(Certificate, ComponentKeyPub, pgp::Signature)> = self
+                    .inline_verify
+                    .certs
+                    .iter()
+                    .flat_map(|c| {
+                        let cc: CheckedCertificate = c.into();
+                        let verifiers =
+                            cc.valid_signing_capable_component_keys_at(&chrono::offset::Utc::now());
+                        let verified: Vec<_> = verifiers
+                            .iter()
+                            .flat_map(|v| {
+                                v.verify_csf(&csf).ok().map(|s| {
+                                    (c.clone(), v.as_componentkey().clone(), s.clone().signature)
+                                })
                             })
-                        })
-                        .collect();
-                    verified
-                })
-                .collect();
+                            .collect();
+                        verified
+                    })
+                    .collect();
 
-            if validated.is_empty() {
-                return Err(sop::errors::Error::NoSignature);
-            }
+                if validated.is_empty() {
+                    return Err(sop::errors::Error::NoSignature);
+                }
 
-            let text = csf.signed_text();
-            sink.write_all(text.as_bytes()).expect("FIXME");
+                let text = csf.signed_text();
+                sink.write_all(text.as_bytes()).expect("FIXME");
 
-            let mr = MessageResult {
-                session_key: None,
-                cleartext: LiteralData::from_str("", &text),
-                validated,
-            };
-            Ok(util::result_to_verifications(&mr))
-        } else {
-            // Regular inline message
-            let (msg, _header) = Message::from_reader_single(Cursor::new(input)).unwrap();
-
-            let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], &self.inline_verify.certs)
-                .expect("FIXME");
-            sink.write_all(mr.cleartext.data()).expect("FIXME");
-
-            if mr.validated.is_empty() {
-                Err(sop::errors::Error::NoSignature)
-            } else {
+                let mr = MessageResult {
+                    session_key: None,
+                    cleartext: LiteralData::from_str("", &text),
+                    validated,
+                };
                 Ok(util::result_to_verifications(&mr))
             }
+            Any::Message(msg) => {
+                let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], &self.inline_verify.certs)
+                    .expect("FIXME");
+                sink.write_all(mr.cleartext.data()).expect("FIXME");
+
+                if mr.validated.is_empty() {
+                    Err(sop::errors::Error::NoSignature)
+                } else {
+                    Ok(util::result_to_verifications(&mr))
+                }
+            }
+            _ => panic!("unexpected data type"),
         }
     }
 }
