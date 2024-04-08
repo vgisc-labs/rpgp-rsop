@@ -477,6 +477,8 @@ dependencies = [
 [[package]]
 name = "card-backend"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd3ee3a298842065dc489180c34a4fe4bbbb8643bb422009d79558a099fb42e5"
 dependencies = [
  "thiserror",
 ]
@@ -484,6 +486,8 @@ dependencies = [
 [[package]]
 name = "card-backend-pcsc"
 version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68bb0b707b1b6b058ed93abd70ef65703ed6fd4150d32a0d735b78cfa61cbb35"
 dependencies = [
  "card-backend",
  "iso7816-tlv",
@@ -1740,7 +1744,9 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
 name = "openpgp-card"
-version = "0.5.0"
+version = "0.5.0-alpha.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d29c9fbfe30f3c93eea4c3333a06392c6cc40f51c67c78528a2356736535b2a5"
 dependencies = [
  "card-backend",
  "chrono",
@@ -1754,6 +1760,8 @@ dependencies = [
 [[package]]
 name = "openpgp-card-rpgp"
 version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "719f07e6d552a2292542aeef5bd98d4c497068dc2374a9341c8df37915dd6e30"
 dependencies = [
  "chrono",
  "openpgp-card",
@@ -2188,7 +2196,9 @@ dependencies = [
 
 [[package]]
 name = "rpgpie"
-version = "0.0.4"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8865c70ef769a8c1ef7712f21653e333487e69f3998d9910680c0664bf85214"
 dependencies = [
  "anyhow",
  "card-backend-pcsc",
@@ -2204,7 +2214,7 @@ dependencies = [
 
 [[package]]
 name = "rpgpie-sop"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "chrono",
  "hex",
@@ -2237,7 +2247,7 @@ dependencies = [
 
 [[package]]
 name = "rsop"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "env_logger",
  "rpgpie-sop",
