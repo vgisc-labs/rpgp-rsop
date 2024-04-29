@@ -7,7 +7,7 @@ SPDX-License-Identifier: CC0-1.0
 
 `rsop` is a "Stateless OpenPGP" CLI tool. It exposes a simple, standardized CLI interface to perform a set of common OpenPGP operations.
 
-rsop is based on a stack of [rpgp](https://github.com/rpgp/rpgp/), [rpgpie 🦀️🔐🥧](https://crates.io/crates/rpgpie) and the [rpgpie-sop](https://crates.io/crates/rpgpie-sop) wrapper library.
+rsop natively supports operations using OpenPGP card devices. It is based on a stack of [rpgp](https://github.com/rpgp/rpgp/) and [rpgpie 🦀️🔐🥧](https://crates.io/crates/rpgpie) (and the [rpgpie-sop](https://crates.io/crates/rpgpie-sop) adapter library).
 
 ## Stateless OpenPGP Command Line Interface
 
@@ -54,28 +54,31 @@ $ cargo run -- generate-key "<alice@example.org>"
 
 ## OpenPGP card support
 
-`rsop` supports use of secret key material on [OpenPGP card](https://en.wikipedia.org/wiki/OpenPGP_card) devices.
+`rsop` natively supports use of secret key material on [OpenPGP card](https://en.wikipedia.org/wiki/OpenPGP_card) devices.
 
 ### User PIN
 
 OpenPGP card devices require a *User PIN* to perform cryptographic operations. `rsop` uses the [openpgp-card-state](https://crates.io/crates/openpgp-card-state) library for User PIN handling.
 
-his means the User PIN must be available to `rsop` via one of the backends supported by openpgp-card-state.
+This means the User PIN must be available to `rsop` via one of the backends supported by openpgp-card-state.
 
 ### Example test run
 
 To demonstrate use of `rsop` with an OpenPGP card, we'll perform a demonstration run here. For this demonstration we'll start with a spare card that we can overwrite.
 
-In addition to `rsop`, this test run uses the `oct` tool from the [openpgp-card-tools](https://crates.io/crates/openpgp-card-tools) crate to provision our OpenPGP card.
+In addition to `rsop`, this example run uses the `oct` tool from the [openpgp-card-tools](https://crates.io/crates/openpgp-card-tools) crate to provision our OpenPGP card.
 
 #### Generating a test key
 
 First, we generate a new private key for our test user, Alice. We use the file extension `.tsk` to signify that the file contains a [Transferable Secret Key](https://www.rfc-editor.org/rfc/rfc4880.html#section-11.2).
 
+```
+$ rsop generate-key "<alice@example.org>" > alice.tsk
+```
+
 Then, we extract a certificate representation from the TSK file. That is, we generate an equivalent "public key" for Alice, which omits the private key material. We store the certificate with the file extension `.cert`:
 
 ```
-$ rsop generate-key "<alice@example.org>" > alice.tsk
 $ rsop extract-cert < alice.tsk > alice.cert
 ```
 
@@ -89,7 +92,7 @@ Available OpenPGP cards:
 FFFE:57011137
 ```
 
-The card we're using in this example has the identity `FFFE:57011137` (this card contains no keys that we care about, so we can use it for this demonstration, and overwrite all of its contents, in the process).
+The card we're using in this example has the identity `FFFE:57011137` (this card contains no keys that we care about, so we are happy to use it. The following step entirely overwrites the card's contents!)
 
 So first, we'll factory-reset the card, to start from a blank slate. This command removes any key material from the card, and resets the User and Admin PIN to their default values:
 
@@ -107,7 +110,7 @@ Enter Admin PIN:
 
 The default Admin PIN on most OpenPGP card devices is `12345678`. We entered this PIN at the prompt above.
 
-We can have a look at the newly imported key material on the card now:
+We can have a look at the newly imported key material on the card, now:
 
 ```
 $ oct status
