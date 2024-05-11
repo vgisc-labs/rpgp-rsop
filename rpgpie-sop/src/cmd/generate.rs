@@ -10,10 +10,25 @@ use crate::{Keys, RPGSOP};
 
 const PROFILE_EDDSA: &str = "draft-koch-eddsa-for-openpgp-00";
 const PROFILE_RFC4880: &str = "rfc4880";
+const PROFILE_NISTP256: &str = "rfc6637-nistp256";
+const PROFILE_NISTP384: &str = "rfc6637-nistp384";
+const PROFILE_NISTP521: &str = "rfc6637-nistp521";
 
 const PROFILES: &[(&str, &str)] = &[
     (PROFILE_EDDSA, "use EdDSA & ECDH over Cv25519"),
     (PROFILE_RFC4880, "use algorithms from RFC 4880"),
+    (
+        PROFILE_NISTP256,
+        "use algorithms from RFC 6337 over curve P-256",
+    ),
+    (
+        PROFILE_NISTP384,
+        "use algorithms from RFC 6337 over curve P-384",
+    ),
+    (
+        PROFILE_NISTP521,
+        "use algorithms from RFC 6337 over curve P-521",
+    ),
 ];
 
 pub(crate) struct GenerateKey {
@@ -49,6 +64,9 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
         self.profile = match profile {
             PROFILE_EDDSA | "default" => PROFILE_EDDSA,
             PROFILE_RFC4880 => PROFILE_RFC4880,
+            PROFILE_NISTP256 => PROFILE_NISTP256,
+            PROFILE_NISTP384 => PROFILE_NISTP384,
+            PROFILE_NISTP521 => PROFILE_NISTP521,
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
         Ok(self)
@@ -85,6 +103,20 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
 
             // RSA 4096 is compatible with Gnuk v1 (while RSA 3072 is not)
             PROFILE_RFC4880 => (pgp::KeyType::Rsa(4096), pgp::KeyType::Rsa(4096)),
+
+            // Nist-P* -based keys
+            PROFILE_NISTP256 => (
+                pgp::KeyType::ECDSA(ECCCurve::P256),
+                pgp::KeyType::ECDH(ECCCurve::P256),
+            ),
+            PROFILE_NISTP384 => (
+                pgp::KeyType::ECDSA(ECCCurve::P384),
+                pgp::KeyType::ECDH(ECCCurve::P384),
+            ),
+            PROFILE_NISTP521 => (
+                pgp::KeyType::ECDSA(ECCCurve::P521),
+                pgp::KeyType::ECDH(ECCCurve::P521),
+            ),
 
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
