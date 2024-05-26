@@ -205,6 +205,19 @@ hello world
 
 The `rsop` CLI tool is built using the excellent <https://crates.io/crates/sop> framework. The `rsop` binary is trivially derived from [rpgpie-sop](https://crates.io/crates/rpgpie-sop).
 
+## Overview of building blocks
+
+```mermaid
+flowchart TD
+    RSOP["rsop <br/> (SOP CLI tool)"] --> RPIESOP
+    RPIESOP["rpgpie-sop <br/> (SOP interface wrapper for rpgpie)"] --> RPIE
+    RPIE["rpgpie <br/> (Experimental high level OpenPGP API)"] --> RPGP
+    RPGP["rPGP <br/> (OpenPGP implementation)"]
+    RPIE  --> OCR["openpgp-card-rpgp"] --> RPGP
+    RPIE --> OCS["openpgp-card-state <br/> (OpenPGP card User PIN handling)"]
+    OCR --> OC["openpgp-card"]
+```
+
 ## License
 
 The (trivial) code of `rsop` is CC0 licensed.
