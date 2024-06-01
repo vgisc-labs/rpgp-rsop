@@ -15,7 +15,7 @@ repository = "https://codeberg.org/heiko/rsop"
 [dependencies]
 chrono = "0.4"
 hex = "0.4"
-pgp = "0.12.0-alpha.2"
+pgp = "0.12.0-alpha.3"
 rand = "0.8"
 rand_core = "0.6"
 rpgpie = "0.0.8"

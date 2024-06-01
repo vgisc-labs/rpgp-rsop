@@ -3,6 +3,7 @@
 
 use std::collections::VecDeque;
 
+use pgp::crypto::ecc_curve::ECCCurve;
 use rpgpie::key::Tsk;
 
 use crate::{Keys, RPGSOP};
@@ -77,7 +78,10 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
     fn generate(mut self: Box<Self>) -> sop::Result<Keys> {
         let (key_type_pri, key_type_enc) = match self.profile {
             // Curve 25519-based keys
-            PROFILE_EDDSA => (pgp::KeyType::EdDSA, pgp::KeyType::ECDH),
+            PROFILE_EDDSA => (
+                pgp::KeyType::EdDSA,
+                pgp::KeyType::ECDH(ECCCurve::Curve25519),
+            ),
 
             // RSA 4096 is compatible with Gnuk v1 (while RSA 3072 is not)
             PROFILE_RFC4880 => (pgp::KeyType::Rsa(4096), pgp::KeyType::Rsa(4096)),
