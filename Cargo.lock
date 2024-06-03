@@ -1738,9 +1738,9 @@ dependencies = [
 
 [[package]]
 name = "openpgp-card-rpgp"
-version = "0.0.7"
+version = "0.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63f291a35bbcfda4aab461ae89972ee36d9b17c5f02678789b76676b301bade2"
+checksum = "292d312c3bae13497584439e24612cdbb638fb66919d181cfc72d352803e7560"
 dependencies = [
  "chrono",
  "openpgp-card",
@@ -2062,9 +2062,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.84"
+version = "1.0.85"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec96c6a92621310b51366f1e28d05ef11489516e93be030060e5fc12024a49d6"
+checksum = "22244ce15aa966053a896d1accb3a6e68469b97c7f33f284b99f0d576879fc23"
 dependencies = [
  "unicode-ident",
 ]
@@ -2169,9 +2169,9 @@ dependencies = [
 
 [[package]]
 name = "rpgpie"
-version = "0.0.13"
+version = "0.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f74ec83fb9924125a1d34d79fa59382db46f15e769cab7cc8446b07186bb07a"
+checksum = "eda7952adb4c480ff3cbdb9a53f450a2a8a507d064cf74f5ec8f221364ff2fd2"
 dependencies = [
  "card-backend-pcsc",
  "chrono",
@@ -2187,7 +2187,7 @@ dependencies = [
 
 [[package]]
 name = "rpgpie-sop"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "chrono",
  "hex",
@@ -2220,7 +2220,7 @@ dependencies = [
 
 [[package]]
 name = "rsop"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "env_logger",
  "rpgpie-sop",
@@ -2462,9 +2462,9 @@ dependencies = [
 
 [[package]]
 name = "sop"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfbb68f8161edf460cd762b5aa03e47416ae51c9d2830a48e0b6d0a771539abf"
+checksum = "7e0278860cffdbdddcc17a1227ed8556a4d7d5238e3b95caf491e586745d7a14"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2574,14 +2574,14 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.13"
+version = "0.8.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4e43f8cc456c9704c851ae29c67e17ef65d2c30017c17a9765b89c382dc8bba"
+checksum = "6f49eb2ab21d2f26bd6db7bf383edc527a7ebaee412d17af4d40fdccd442f335"
 dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "toml_edit 0.22.13",
+ "toml_edit 0.22.14",
 ]
 
 [[package]]
@@ -2617,9 +2617,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.22.13"
+version = "0.22.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c127785850e8c20836d49732ae6abfa47616e60bf9d9f57c43c250361a9db96c"
+checksum = "f21c7aaf97f1bd9ca9d4f9e73b0a6c74bd5afef56f2bc931943a6e1c37e04e38"
 dependencies = [
  "indexmap",
  "serde",
