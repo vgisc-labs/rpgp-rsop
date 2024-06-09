@@ -36,6 +36,10 @@ impl sop::SOP<'_> for RPGSOP {
         Ok(Box::new(cmd::version::Version::new()))
     }
 
+    fn sopv_version(&self) -> sop::Result<&'static str> {
+        Ok("1.0")
+    }
+
     fn generate_key(
         &'_ self,
     ) -> sop::Result<Box<dyn sop::ops::GenerateKey<Self, Self::Keys> + '_>> {
