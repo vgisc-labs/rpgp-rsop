@@ -149,6 +149,7 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
             }
         };
 
+        let mut innermost = true;
         let mut signed = Message::Literal(lit);
 
         for signer in signers {
@@ -165,6 +166,25 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
 
             if let Some(sig) = sig {
                 signed = sig;
+
+                // HACK: tweak the OPS "last" flag
+                if innermost {
+                    // don't modify this OPS
+                    innermost = false;
+                } else {
+                    // all but the innermost OPS should not be set to "last"
+                    match signed {
+                        Message::Signed {
+                            ref mut one_pass_signature,
+                            ..
+                        } => {
+                            if let Some(ref mut ops) = one_pass_signature {
+                                ops.last = 0;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
             } else {
                 panic!("foo");
             }
