@@ -3,10 +3,10 @@
 
 use std::io;
 
-use pgp::packet::LiteralData;
+use pgp::packet::{LiteralData, Packet};
 use pgp::ser::Serialize;
 use pgp::types::KeyTrait;
-use pgp::{ArmorOptions, Message};
+use pgp::{ArmorOptions, Deserializable, Message};
 use rpgpie::key::DataSigner;
 
 use crate::cmd::sign::Sign;
@@ -149,15 +149,17 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
             }
         };
 
-        let mut innermost = true;
-        let mut signed = Message::Literal(lit);
+        let mut packets = vec![];
+        packets.push(Packet::from(lit.clone()));
+
+        let lit_msg = Message::Literal(lit);
 
         for signer in signers {
             let sig = pws
                 .iter()
                 .flat_map(|pw| {
                     signer.sign_msg(
-                        signed.clone(),
+                        lit_msg.clone(),
                         || String::from_utf8_lossy(pw).to_string(),
                         hash_algo,
                     )
@@ -165,30 +167,32 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
                 .next();
 
             if let Some(sig) = sig {
-                signed = sig;
-
-                // HACK: tweak the OPS "last" flag
-                if innermost {
-                    // don't modify this OPS
-                    innermost = false;
-                } else {
-                    // all but the innermost OPS should not be set to "last"
-                    match signed {
-                        Message::Signed {
-                            ref mut one_pass_signature,
-                            ..
-                        } => {
-                            if let Some(ref mut ops) = one_pass_signature {
-                                ops.last = 0;
-                            }
+                if let Message::Signed {
+                    one_pass_signature,
+                    signature,
+                    ..
+                } = sig
+                {
+                    if let Some(mut ops) = one_pass_signature {
+                        if packets.len() > 1 {
+                            // only the innermost signature should be marked "last",
+                            // so we mark all others as non-last.
+                            ops.last = 0;
                         }
-                        _ => {}
+                        packets.insert(0, Packet::from(ops));
                     }
+
+                    packets.push(Packet::from(signature));
                 }
             } else {
                 panic!("foo");
             }
         }
+
+        let signed = Message::from_packets(packets.into_iter().map(Ok).peekable())
+            .next()
+            .expect("should be a message")
+            .expect("FIXME");
 
         match self.inline_sign.armor {
             true => signed
