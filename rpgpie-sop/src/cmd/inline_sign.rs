@@ -3,6 +3,7 @@
 
 use std::io;
 
+use pgp::cleartext::CleartextSignedMessage;
 use pgp::packet::{LiteralData, Packet};
 use pgp::ser::Serialize;
 use pgp::types::KeyTrait;
@@ -136,11 +137,27 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
 
                 let s: Vec<_> = signers.into_iter().map(|s| (s, pws.as_slice())).collect();
 
-                // FIXME: handle multi-signatures for CSF in rpgpie
-                assert_eq!(s.len(), 1, "currently only exactly one signer is supported");
-                let (ds, pw) = &s[0];
+                // FIXME: This all is awkward and inefficient.
+                // We shouldn't use `ds.sign_csf`, and instead use a separate pure data signing function
 
-                let csf = ds.sign_csf(&body, pw).expect("FIXME");
+                // We don't use the `_text` input to the closure, but instead let `ds.sign_csf`
+                // normalize `body` for each signature.
+
+                let signers = |_text: &[u8]| {
+                    let mut sigs = vec![];
+
+                    for x in s {
+                        let (ds, pw) = &x;
+
+                        let csf = ds.sign_csf(&body, pw).expect("FIXME");
+                        let s = csf.signatures();
+                        sigs.push(s[0].signature.clone());
+                    }
+
+                    Ok(sigs)
+                };
+
+                let csf = CleartextSignedMessage::new_many(&body, signers).expect("FIXME");
 
                 csf.to_armored_writer(&mut sink, ArmorOptions::default())
                     .expect("FIXME");
