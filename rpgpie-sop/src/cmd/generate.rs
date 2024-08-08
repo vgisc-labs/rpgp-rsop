@@ -124,8 +124,17 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
         let primary_user_id = self.user_ids.pop_front();
         let other_user_ids = self.user_ids.into();
 
-        let tsk = Tsk::generate(key_type_pri, key_type_enc, primary_user_id, other_user_ids)
-            .expect("FIXME");
+        let tsk = Tsk::generate(
+            key_type_pri,
+            if self.signing_only {
+                None
+            } else {
+                Some(key_type_enc)
+            },
+            primary_user_id,
+            other_user_ids,
+        )
+        .expect("FIXME");
 
         Ok(Keys { keys: vec![tsk] })
     }
