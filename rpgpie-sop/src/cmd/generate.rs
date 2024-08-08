@@ -134,7 +134,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             primary_user_id,
             other_user_ids,
         )
-        .expect("FIXME");
+        .map_err(std::io::Error::other)?;
 
         Ok(Keys { keys: vec![tsk] })
     }
