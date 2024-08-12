@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2023 Heiko Schaefer <heiko@schaefer.name>
+# SPDX-FileCopyrightText: 2024 Wiktor Kwapisiewicz <wiktor@metacode.biz>
+# SPDX-License-Identifier: CC0-1.0
+
+when:
+  path: [ "*/src/**" , "Cargo.toml", ".woodpecker/**" ]
+
+steps:
+  tests:
+    image: rust
+    commands:
+      - apt update -y -qq && apt install -y -qq --no-install-recommends libpcsclite-dev
+      - cargo --version
+      - rustc --version
+      - cargo test --all

@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2023 Heiko Schaefer <heiko@schaefer.name>
+# SPDX-FileCopyrightText: 2024 Wiktor Kwapisiewicz <wiktor@metacode.biz>
+# SPDX-License-Identifier: CC0-1.0
+
+when:
+  path: [ "*/src/**" , "Cargo.toml", ".woodpecker/**" ]
+
+steps:
+  fmt:
+    image: rust
+    commands:
+      - rustup toolchain install nightly && rustup component add --toolchain nightly rustfmt
+      - cargo +nightly fmt -- --check
