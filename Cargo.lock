@@ -2141,9 +2141,9 @@ dependencies = [
 
 [[package]]
 name = "rpgpie"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31babb62fcc08430b781420c34808dfde3aae31a24879024807ac90c83e6d83e"
+checksum = "040a9666887ecb1ee15dc9d6f094ab79651beef119865a80bd1f0721e46bd386"
 dependencies = [
  "card-backend-pcsc",
  "chrono",
