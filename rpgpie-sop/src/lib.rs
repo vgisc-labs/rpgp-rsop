@@ -49,7 +49,7 @@ impl sop::SOP<'_> for RPGSOP {
     fn change_key_password(
         &'_ self,
     ) -> sop::Result<Box<dyn sop::ops::ChangeKeyPassword<Self, Self::Keys>>> {
-        todo!()
+        Ok(Box::new(cmd::password::ChangeKeyPassword::new()))
     }
 
     fn revoke_key(
