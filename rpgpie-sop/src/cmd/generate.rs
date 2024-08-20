@@ -9,23 +9,34 @@ use rpgpie::key::Tsk;
 use crate::{Keys, RPGSOP};
 
 const PROFILE_EDDSA: &str = "draft-koch-eddsa-for-openpgp-00";
-const PROFILE_RFC4880: &str = "rfc4880";
-const PROFILE_NISTP256: &str = "rfc6637-nistp256";
-const PROFILE_NISTP384: &str = "rfc6637-nistp384";
-const PROFILE_NISTP521: &str = "rfc6637-nistp521";
-
 const PROFILE_RFC9580: &str = "rfc9580";
-const PROFILE_RFC9580_LEGACY: &str = "rfc9580-legacy"; // FIXME: this combination is actually illegal. the test suite should check that implementations don't allow it.
-const PROFILE_RFC9580_NISTP: &str = "rfc9580-nistp";
-const PROFILE_RFC9580_RSA: &str = "rfc9580-rsa";
+
+const PROFILE_RFC4880: &str = "interop-testing-rfc4880";
+const PROFILE_NISTP256: &str = "interop-testing-rfc6637-nistp256";
+const PROFILE_NISTP384: &str = "interop-testing-rfc6637-nistp384";
+const PROFILE_NISTP521: &str = "interop-testing-rfc6637-nistp521";
+
+const PROFILE_RFC9580_NISTP: &str = "interop-testing-rfc9580-nistp";
+const PROFILE_RFC9580_RSA: &str = "interop-testing-rfc9580-rsa";
+const PROFILE_RFC9580_CV448: &str = "interop-testing-rfc9580-cv448";
 
 const PROFILES: &[(&str, &str)] = &[
     (PROFILE_EDDSA, "use EdDSA & ECDH over Cv25519"),
     (PROFILE_RFC9580, "use algorithms from RFC 9580"),
-    (PROFILE_RFC9580_RSA, "use format from RFC 9580 with RSA"),
+    //
+    // -- the following profiles are for interop testing only --
+    //
+    (
+        PROFILE_RFC9580_RSA,
+        "Only for interop-testing: use algorithms from RFC 9580 with RSA",
+    ),
     (
         PROFILE_RFC9580_NISTP,
-        "use format from RFC 9580 with NISTP256",
+        "Only for interop-testing: use algorithms from RFC 9580 with NIST P-256",
+    ),
+    (
+        PROFILE_RFC9580_CV448,
+        "Only for interop-testing: use algorithms from RFC 9580 with X448 and Ed25519",
     ),
 ];
 
@@ -66,9 +77,9 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             PROFILE_NISTP384 => PROFILE_NISTP384,
             PROFILE_NISTP521 => PROFILE_NISTP521,
             PROFILE_RFC9580 => PROFILE_RFC9580,
-            PROFILE_RFC9580_LEGACY => PROFILE_RFC9580_LEGACY,
             PROFILE_RFC9580_NISTP => PROFILE_RFC9580_NISTP,
             PROFILE_RFC9580_RSA => PROFILE_RFC9580_RSA,
+            PROFILE_RFC9580_CV448 => PROFILE_RFC9580_CV448,
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
         Ok(self)
@@ -127,18 +138,6 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 let tsk = Tsk::generate6(
                     pgp::KeyType::Ed25519,
                     pgp::KeyType::X25519,
-                    primary_user_id,
-                    other_user_ids,
-                )
-                .expect("FIXME");
-
-                return Ok(Keys { keys: vec![tsk] });
-            }
-
-            PROFILE_RFC9580_LEGACY => {
-                let tsk = Tsk::generate6(
-                    pgp::KeyType::EdDSALegacy,
-                    pgp::KeyType::ECDH(ECCCurve::Curve25519),
                     primary_user_id,
                     other_user_ids,
                 )
