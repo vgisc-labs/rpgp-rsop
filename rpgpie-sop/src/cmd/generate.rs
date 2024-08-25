@@ -110,6 +110,14 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
         let primary_user_id = self.user_ids.pop_front();
         let other_user_ids = self.user_ids.into();
 
+        let key_password: Option<&[u8]> = self
+            .key_password
+            .as_ref()
+            .map(sop::plumbing::PasswordsAreHumanReadable::normalized);
+
+        let key_password: Option<String> =
+            key_password.map(String::from_utf8_lossy).map(Into::into);
+
         let (key_type_pri, key_type_enc) = match self.profile {
             // Curve 25519-based keys
             PROFILE_EDDSA => (
@@ -140,6 +148,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                     pgp::KeyType::X25519,
                     primary_user_id,
                     other_user_ids,
+                    key_password.as_deref(),
                 )
                 .expect("FIXME");
 
@@ -152,6 +161,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                     pgp::KeyType::ECDH(ECCCurve::P256),
                     primary_user_id,
                     other_user_ids,
+                    key_password.as_deref(),
                 )
                 .expect("FIXME");
 
@@ -164,6 +174,20 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                     pgp::KeyType::Rsa(4096),
                     primary_user_id,
                     other_user_ids,
+                    key_password.as_deref(),
+                )
+                .expect("FIXME");
+
+                return Ok(Keys { keys: vec![tsk] });
+            }
+
+            PROFILE_RFC9580_CV448 => {
+                let tsk = Tsk::generate6(
+                    pgp::KeyType::Ed25519, // FIXME: use Ed448 when rpgp supports it
+                    pgp::KeyType::X448,
+                    primary_user_id,
+                    other_user_ids,
+                    key_password.as_deref(),
                 )
                 .expect("FIXME");
 
@@ -182,6 +206,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             },
             primary_user_id,
             other_user_ids,
+            key_password.as_deref(),
         )
         .map_err(std::io::Error::other)?;
 
