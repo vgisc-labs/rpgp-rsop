@@ -11,7 +11,7 @@ edition = "2021"
 repository = "https://codeberg.org/heiko/rsop"
 
 [dependencies]
-env_logger = "0.11"
+env_logger = "0.10.2, < 0.12"
 rpgpie-sop = { version = "0.3", path = "../rpgpie-sop" }
 sop = "0.7.1"
 
