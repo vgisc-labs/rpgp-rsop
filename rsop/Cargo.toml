@@ -13,8 +13,9 @@ repository = "https://codeberg.org/heiko/rsop"
 [dependencies]
 env_logger = "0.11"
 rpgpie-sop = { version = "0.3", path = "../rpgpie-sop" }
-sop = "0.7.1"
+sop = "0.7.2"
 
 [features]
 default = ["cli"]
 cli = ["sop/cli"]
+cliv = ["sop/cliv"]
