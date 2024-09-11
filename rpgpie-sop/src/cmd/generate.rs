@@ -14,10 +14,7 @@ const PROFILE_NISTP256: &str = "rfc6637-nistp256";
 const PROFILE_NISTP384: &str = "rfc6637-nistp384";
 const PROFILE_NISTP521: &str = "rfc6637-nistp521";
 
-const PROFILES: &[(&str, &str)] = &[
-    (PROFILE_EDDSA, "use EdDSA & ECDH over Cv25519"),
-    (PROFILE_RFC4880, "use algorithms from RFC 4880"),
-];
+const PROFILES: &[(&str, &str)] = &[(PROFILE_EDDSA, "use EdDSA & ECDH over Cv25519")];
 
 pub(crate) struct GenerateKey {
     profile: &'static str,
