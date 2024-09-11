@@ -5,7 +5,7 @@
 name = "rpgpie-sop"
 description = "Experimental SOP implementation based on rpgpie"
 license = "MIT OR Apache-2.0"
-version = "0.4.0-pre"
+version = "0.4.0-alpha.1"
 authors = ["Heiko Schaefer <heiko@schaefer.name>"]
 edition = "2021"
 repository = "https://codeberg.org/heiko/rsop"
@@ -16,8 +16,8 @@ repository = "https://codeberg.org/heiko/rsop"
 chrono = "0.4"
 hex = "0.4"
 log = "0.4.22"
-pgp = { git = "https://github.com/hko-s/rpgp.git", branch = "rfc9580-encrypt" }
+pgp = "0.14"
 rand = "0.8"
 rand_core = "0.6"
-rpgpie = { git = "https://codeberg.org/heiko/rpgpie.git", branch = "v6" }
+rpgpie = "0.2.0-alpha.1"
 sop = "0.7.1"
