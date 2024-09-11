@@ -9,11 +9,22 @@ version = "0.3.7"
 authors = ["Heiko Schaefer <heiko@schaefer.name>"]
 edition = "2021"
 repository = "https://codeberg.org/heiko/rsop"
+default-run = "rsop"
 
 [dependencies]
 env_logger = ">=0.10, <0.12"
 rpgpie-sop = { version = "0.3", path = "../rpgpie-sop" }
 sop = "0.7.2"
+
+[[bin]]
+name = "rsop"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[[bin]]
+name = "rsopv"
+path = "src/main.rs"
+required-features = ["cliv"]
 
 [features]
 default = ["cli"]
