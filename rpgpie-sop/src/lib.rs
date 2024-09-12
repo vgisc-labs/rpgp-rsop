@@ -91,7 +91,7 @@ impl sop::SOP<'_> for RPGSOP {
     }
 
     fn dearmor(&'_ self) -> sop::Result<Box<dyn sop::ops::Dearmor>> {
-        todo!()
+        Ok(Box::new(cmd::dearmor::Dearmor::new()))
     }
 
     fn inline_detach(&'_ self) -> sop::Result<Box<dyn sop::ops::InlineDetach<Self::Sigs>>> {

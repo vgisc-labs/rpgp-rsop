@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+pub(crate) mod dearmor;
 pub(crate) mod decrypt;
 pub(crate) mod encrypt;
 pub(crate) mod extract_cert;
