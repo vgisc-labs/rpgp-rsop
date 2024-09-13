@@ -197,6 +197,18 @@ $ cat sig.alice | rsop inline-verify alice.cert
 hello world
 ```
 
+## rsopv, the signature verification subset
+
+As a smaller alternative to `rsop`, it is possible to build the `rsopv` binary. `rsopv` implements the [sopv Subset](https://dkg.gitlab.io/openpgp-stateless-cli/#name-sopv-subset), which only supports OpenPGP signature verification.
+
+### Building the rsopv binary
+
+The `rsopv` binary can be built like this:
+
+```
+$ cargo build --release --no-default-features --features="cliv" --bin rsopv
+```
+
 ## OpenPGP interoperability test suite
 
 `rsop` is included in the [OpenPGP interoperability test suite](https://tests.sequoia-pgp.org/), which tests the features of implementations, adherence to expectations, as well as interoperation between a large set of implementations.
