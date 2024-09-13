@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use pgp::armor::BlockType;
-use pgp::types::Tag;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::ops::DerefMut;
 use std::sync::Mutex;
+
+use pgp::armor::BlockType;
+use pgp::types::Tag;
 
 #[derive(Default)]
 pub(crate) struct Armor {
