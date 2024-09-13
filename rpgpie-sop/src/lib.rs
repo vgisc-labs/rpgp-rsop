@@ -87,7 +87,7 @@ impl sop::SOP<'_> for RPGSOP {
     }
 
     fn armor(&'_ self) -> sop::Result<Box<dyn sop::ops::Armor>> {
-        todo!()
+        Ok(Box::new(cmd::armor::Armor::new()))
     }
 
     fn dearmor(&'_ self) -> sop::Result<Box<dyn sop::ops::Dearmor>> {
