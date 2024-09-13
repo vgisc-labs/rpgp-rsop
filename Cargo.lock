@@ -2162,7 +2162,7 @@ dependencies = [
 
 [[package]]
 name = "rpgpie-sop"
-version = "0.3.7"
+version = "0.3.8"
 dependencies = [
  "chrono",
  "hex",
@@ -2195,7 +2195,7 @@ dependencies = [
 
 [[package]]
 name = "rsop"
-version = "0.3.7"
+version = "0.3.8"
 dependencies = [
  "env_logger",
  "rpgpie-sop",
