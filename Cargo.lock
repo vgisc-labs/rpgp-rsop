@@ -2166,6 +2166,7 @@ version = "0.3.8"
 dependencies = [
  "chrono",
  "hex",
+ "log",
  "pgp",
  "rand",
  "rand_core",

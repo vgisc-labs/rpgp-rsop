@@ -116,14 +116,24 @@ impl<'a> sop::ops::Sign<'a, RPGSOP, Keys, Sigs> for Sign {
 
         for tsk in self.signers {
             for signer in tsk.signing_capable_component_keys() {
+                log::info!(
+                    "Trying to sign data with signer: {:02x?}",
+                    signer.fingerprint()
+                );
                 let sig = pws
                     .iter()
                     .flat_map(|pw| {
-                        signer.sign_msg(
+                        let result = signer.sign_msg(
                             msg.clone(),
                             || String::from_utf8_lossy(pw).to_string(),
                             hash_algo,
-                        )
+                        );
+
+                        if result.is_err() {
+                            log::warn!("Signing failed: {result:?}");
+                        }
+
+                        result
                     })
                     .next();
 
@@ -131,16 +141,20 @@ impl<'a> sop::ops::Sign<'a, RPGSOP, Keys, Sigs> for Sign {
                     Some(Message::Signed { signature, .. }) => sigs.push(signature),
                     Some(_) => panic!("Unexpected message type while signing: {:?}", sig),
                     None => {
-                        eprintln!(
+                        log::warn!(
                             "Couldn't sign with signer key {:02x?}",
                             signer.fingerprint()
                         );
 
-                        // FIXME: probably the password(s) were wrong, but this is a bit of a guess
-                        return Err(sop::errors::Error::KeyIsProtected);
+                        // signing with this signing key failed but let's continue
                     }
                 };
             }
+        }
+
+        if sigs.is_empty() {
+            // FIXME: probably the password(s) were wrong, but this is a bit of a guess
+            return Err(sop::errors::Error::KeyIsProtected);
         }
 
         let hash_algo_id = u8::from(hash_algo);
