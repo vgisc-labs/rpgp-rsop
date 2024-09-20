@@ -5,7 +5,7 @@
 name = "rpgpie-sop"
 description = "Experimental SOP implementation based on rpgpie"
 license = "MIT OR Apache-2.0"
-version = "0.3.8"
+version = "0.3.9"
 authors = ["Heiko Schaefer <heiko@schaefer.name>"]
 edition = "2021"
 repository = "https://codeberg.org/heiko/rsop"
