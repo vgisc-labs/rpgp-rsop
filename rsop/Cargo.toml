@@ -26,6 +26,9 @@ name = "rsopv"
 path = "src/main.rs"
 required-features = ["cliv"]
 
+[profile.release]
+codegen-units = 1
+
 [features]
 default = ["cli"]
 cli = ["sop/cli"]
