@@ -6,7 +6,7 @@ use std::io;
 use pgp::cleartext::CleartextSignedMessage;
 use pgp::packet::{LiteralData, Packet};
 use pgp::ser::Serialize;
-use pgp::types::KeyTrait;
+use pgp::types::PublicKeyTrait;
 use pgp::{ArmorOptions, Deserializable, Message};
 use rpgpie::key::DataSigner;
 

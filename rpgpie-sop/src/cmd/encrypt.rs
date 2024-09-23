@@ -3,21 +3,24 @@
 
 use std::io;
 
+use crate::cmd::sign::Sign;
+use crate::{Certs, Keys, RPGSOP};
 use chrono::{DateTime, Utc};
+use pgp::crypto::aead::AeadAlgorithm;
 use pgp::crypto::sym::SymmetricKeyAlgorithm;
 use rpgpie::key::checked::CheckedCertificate;
 use rpgpie::key::component::ComponentKeyPub;
 use rpgpie::key::Certificate;
 use rpgpie::msg;
-
-use crate::cmd::sign::Sign;
-use crate::{Certs, Keys, RPGSOP};
+use rpgpie::policy::Seipd;
 
 pub(crate) struct Encrypt {
     armor: bool,
     profile: &'static str,
     mode: sop::ops::EncryptAs,
     symmetric_algorithms: Vec<SymmetricKeyAlgorithm>,
+    aead_algorithms: Vec<(SymmetricKeyAlgorithm, AeadAlgorithm)>,
+    seipd: Vec<Seipd>,
     recipients: Vec<ComponentKeyPub>,
     skesk_passwords: Vec<sop::Password>,
     sign: Sign, // Signing infrastructure, including private keys
@@ -25,8 +28,12 @@ pub(crate) struct Encrypt {
 
 impl Encrypt {
     const PROFILE_RFC4880: &'static str = "rfc4880";
-    const PROFILES: &'static [(&'static str, &'static str)] =
-        &[(Self::PROFILE_RFC4880, "use algorithms from RFC 4880")];
+    const PROFILE_RFC9580: &'static str = "rfc9580";
+
+    const PROFILES: &'static [(&'static str, &'static str)] = &[
+        (Self::PROFILE_RFC4880, "use algorithms from RFC 4880"),
+        (Self::PROFILE_RFC9580, "use algorithms from RFC 9580"),
+    ];
 
     pub(crate) fn new() -> Self {
         Self {
@@ -34,6 +41,8 @@ impl Encrypt {
             profile: Self::PROFILE_RFC4880,
             mode: Default::default(),
             symmetric_algorithms: rpgpie::policy::PREFERRED_SYMMETRIC_KEY_ALGORITHMS.into(),
+            aead_algorithms: rpgpie::policy::PREFERRED_AEAD_ALGORITHMS.into(),
+            seipd: rpgpie::policy::PREFERRED_SEIPD_MECHANISMS.into(),
             recipients: Default::default(),
             skesk_passwords: Default::default(),
             sign: Sign::new(),
@@ -44,10 +53,30 @@ impl Encrypt {
         let ccert: CheckedCertificate = cert.into();
         let now: DateTime<Utc> = chrono::offset::Utc::now();
 
-        // Handle recipient preferences, if any
+        // Handle recipient symmetric algorithm preferences, if any
         // (calculate intersection with our defaults)
         if let Some(p) = ccert.preferred_symmetric_key_algo(&now) {
             self.symmetric_algorithms.retain(|a| p.contains(a));
+        }
+
+        // Handle recipient aead preferences, if any
+        // (calculate intersection with our defaults)
+        if let Some(p) = ccert.preferred_aead_algo(&now) {
+            self.aead_algorithms.retain(|a| p.contains(a));
+        }
+
+        // Handle SEIPD preferences, if any
+        // (calculate intersection with our defaults)
+        if let Some(p) = ccert.features(&now) {
+            fn contains(p: u8, seipd: Seipd) -> bool {
+                match seipd {
+                    Seipd::SED => true,
+                    Seipd::SEIPD1 => p & 1 != 0,
+                    Seipd::SEIPD2 => p & 8 != 0,
+                }
+            }
+
+            self.seipd.retain(|a| contains(p, *a));
         }
 
         let keys = ccert.valid_encryption_capable_component_keys();
@@ -80,6 +109,7 @@ impl<'a> sop::ops::Encrypt<'a, RPGSOP, Certs, Keys> for Encrypt {
     ) -> sop::Result<Box<dyn sop::ops::Encrypt<'a, RPGSOP, Certs, Keys> + 'a>> {
         self.profile = match profile {
             Self::PROFILE_RFC4880 | "default" => Self::PROFILE_RFC4880,
+            Self::PROFILE_RFC9580 => Self::PROFILE_RFC9580,
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
         Ok(self)
@@ -162,6 +192,24 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
             .first()
             .unwrap_or(&SymmetricKeyAlgorithm::default());
 
+        let aead_algo = *self
+            .encrypt
+            .aead_algorithms
+            .first()
+            .unwrap_or(&(SymmetricKeyAlgorithm::AES128, AeadAlgorithm::Ocb));
+
+        let seipd = if !self.encrypt.recipients.is_empty() {
+            // If we have recipients, we choose the Seipd version purely based on their preferences
+            *self.encrypt.seipd.first().unwrap_or(&Seipd::SEIPD1)
+        } else {
+            // If we have no recipients, choose seipd1 vs. seipd2 based on the profile
+            match self.encrypt.profile {
+                Encrypt::PROFILE_RFC4880 => Seipd::SEIPD1,
+                Encrypt::PROFILE_RFC9580 => Seipd::SEIPD2,
+                _ => unimplemented!(),
+            }
+        };
+
         let skesk_passwords = self
             .encrypt
             .skesk_passwords
@@ -175,6 +223,8 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
             self.encrypt.sign.signers,
             self.encrypt.sign.hash_algos.first(),
             symmetric_algo,
+            aead_algo,
+            seipd,
             self.plaintext,
             sink,
             self.encrypt.armor,

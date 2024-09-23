@@ -14,7 +14,20 @@ const PROFILE_NISTP256: &str = "rfc6637-nistp256";
 const PROFILE_NISTP384: &str = "rfc6637-nistp384";
 const PROFILE_NISTP521: &str = "rfc6637-nistp521";
 
-const PROFILES: &[(&str, &str)] = &[(PROFILE_EDDSA, "use EdDSA & ECDH over Cv25519")];
+const PROFILE_RFC9580: &str = "rfc9580";
+const PROFILE_RFC9580_LEGACY: &str = "rfc9580-legacy"; // FIXME: this combination is actually illegal. the test suite should check that implementations don't allow it.
+const PROFILE_RFC9580_NISTP: &str = "rfc9580-nistp";
+const PROFILE_RFC9580_RSA: &str = "rfc9580-rsa";
+
+const PROFILES: &[(&str, &str)] = &[
+    (PROFILE_EDDSA, "use EdDSA & ECDH over Cv25519"),
+    (PROFILE_RFC9580, "use algorithms from RFC 9580"),
+    (PROFILE_RFC9580_RSA, "use format from RFC 9580 with RSA"),
+    (
+        PROFILE_RFC9580_NISTP,
+        "use format from RFC 9580 with NISTP256",
+    ),
+];
 
 pub(crate) struct GenerateKey {
     profile: &'static str,
@@ -52,6 +65,10 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             PROFILE_NISTP256 => PROFILE_NISTP256,
             PROFILE_NISTP384 => PROFILE_NISTP384,
             PROFILE_NISTP521 => PROFILE_NISTP521,
+            PROFILE_RFC9580 => PROFILE_RFC9580,
+            PROFILE_RFC9580_LEGACY => PROFILE_RFC9580_LEGACY,
+            PROFILE_RFC9580_NISTP => PROFILE_RFC9580_NISTP,
+            PROFILE_RFC9580_RSA => PROFILE_RFC9580_RSA,
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
         Ok(self)
@@ -79,10 +96,13 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
     }
 
     fn generate(mut self: Box<Self>) -> sop::Result<Keys> {
+        let primary_user_id = self.user_ids.pop_front();
+        let other_user_ids = self.user_ids.into();
+
         let (key_type_pri, key_type_enc) = match self.profile {
             // Curve 25519-based keys
             PROFILE_EDDSA => (
-                pgp::KeyType::EdDSA,
+                pgp::KeyType::EdDSALegacy,
                 pgp::KeyType::ECDH(ECCCurve::Curve25519),
             ),
 
@@ -103,11 +123,56 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 pgp::KeyType::ECDH(ECCCurve::P521),
             ),
 
+            PROFILE_RFC9580 => {
+                let tsk = Tsk::generate6(
+                    pgp::KeyType::Ed25519,
+                    pgp::KeyType::X25519,
+                    primary_user_id,
+                    other_user_ids,
+                )
+                .expect("FIXME");
+
+                return Ok(Keys { keys: vec![tsk] });
+            }
+
+            PROFILE_RFC9580_LEGACY => {
+                let tsk = Tsk::generate6(
+                    pgp::KeyType::EdDSALegacy,
+                    pgp::KeyType::ECDH(ECCCurve::Curve25519),
+                    primary_user_id,
+                    other_user_ids,
+                )
+                .expect("FIXME");
+
+                return Ok(Keys { keys: vec![tsk] });
+            }
+
+            PROFILE_RFC9580_NISTP => {
+                let tsk = Tsk::generate6(
+                    pgp::KeyType::ECDSA(ECCCurve::P256),
+                    pgp::KeyType::ECDH(ECCCurve::P256),
+                    primary_user_id,
+                    other_user_ids,
+                )
+                .expect("FIXME");
+
+                return Ok(Keys { keys: vec![tsk] });
+            }
+
+            PROFILE_RFC9580_RSA => {
+                let tsk = Tsk::generate6(
+                    pgp::KeyType::Rsa(4096),
+                    pgp::KeyType::Rsa(4096),
+                    primary_user_id,
+                    other_user_ids,
+                )
+                .expect("FIXME");
+
+                return Ok(Keys { keys: vec![tsk] });
+            }
+
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
-
-        let primary_user_id = self.user_ids.pop_front();
-        let other_user_ids = self.user_ids.into();
 
         let tsk = Tsk::generate(
             key_type_pri,

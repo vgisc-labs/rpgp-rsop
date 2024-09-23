@@ -148,6 +148,8 @@ impl<'a> sop::ops::Ready<(Option<sop::SessionKey>, Vec<sop::ops::Verification>)>
                 &self.decrypt.verify.certs,
             ) else {
                 // FIXME: probably the password(s) were wrong, but this is a bit of a guess
+                //
+                // FIXME: SKESK decryption failure should give a different error?
                 return Err(sop::errors::Error::KeyIsProtected);
             };
 

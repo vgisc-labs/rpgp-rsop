@@ -16,8 +16,8 @@ pub(crate) fn to_verification(
 ) -> sop::ops::Verification {
     let ct: SystemTime = (*signature.created().expect("FIXME")).into();
 
-    let key_fp = hex::encode(key.fingerprint());
-    let cert_fp = hex::encode(cert.fingerprint());
+    let key_fp = hex::encode(key.fingerprint().as_bytes());
+    let cert_fp = hex::encode(cert.fingerprint().as_bytes());
 
     let mode = match signature.typ() {
         SignatureType::Binary => sop::ops::SignatureMode::Binary,
