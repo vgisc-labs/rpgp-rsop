@@ -77,6 +77,9 @@ impl Encrypt {
             }
 
             self.seipd.retain(|a| contains(p, *a));
+        } else {
+            // if there's no features setting, we only do SeipdV1
+            self.seipd = vec![Seipd::SEIPD1]
         }
 
         let keys = ccert.valid_encryption_capable_component_keys();
