@@ -143,7 +143,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             ),
 
             PROFILE_RFC9580 => {
-                let tsk = Tsk::generate6(
+                let tsk = Tsk::generate_v6(
                     pgp::KeyType::Ed25519,
                     pgp::KeyType::X25519,
                     primary_user_id,
@@ -156,7 +156,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             }
 
             PROFILE_RFC9580_NISTP => {
-                let tsk = Tsk::generate6(
+                let tsk = Tsk::generate_v6(
                     pgp::KeyType::ECDSA(ECCCurve::P256),
                     pgp::KeyType::ECDH(ECCCurve::P256),
                     primary_user_id,
@@ -169,7 +169,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             }
 
             PROFILE_RFC9580_RSA => {
-                let tsk = Tsk::generate6(
+                let tsk = Tsk::generate_v6(
                     pgp::KeyType::Rsa(4096),
                     pgp::KeyType::Rsa(4096),
                     primary_user_id,
@@ -182,7 +182,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             }
 
             PROFILE_RFC9580_CV448 => {
-                let tsk = Tsk::generate6(
+                let tsk = Tsk::generate_v6(
                     pgp::KeyType::Ed25519, // FIXME: use Ed448 when rpgp supports it
                     pgp::KeyType::X448,
                     primary_user_id,
@@ -197,7 +197,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
 
-        let tsk = Tsk::generate(
+        let tsk = Tsk::generate_v4(
             key_type_pri,
             if self.signing_only {
                 None
