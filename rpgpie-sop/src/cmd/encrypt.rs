@@ -3,8 +3,6 @@
 
 use std::io;
 
-use crate::cmd::sign::Sign;
-use crate::{Certs, Keys, RPGSOP};
 use chrono::{DateTime, Utc};
 use pgp::crypto::aead::AeadAlgorithm;
 use pgp::crypto::sym::SymmetricKeyAlgorithm;
@@ -13,6 +11,9 @@ use rpgpie::key::component::ComponentKeyPub;
 use rpgpie::key::Certificate;
 use rpgpie::msg;
 use rpgpie::policy::Seipd;
+
+use crate::cmd::sign::Sign;
+use crate::{Certs, Keys, RPGSOP};
 
 pub(crate) struct Encrypt {
     armor: bool,
@@ -189,18 +190,6 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
             return Err(sop::errors::Error::MissingArg);
         }
 
-        let symmetric_algo = *self
-            .encrypt
-            .symmetric_algorithms
-            .first()
-            .unwrap_or(&SymmetricKeyAlgorithm::default());
-
-        let aead_algo = *self
-            .encrypt
-            .aead_algorithms
-            .first()
-            .unwrap_or(&(SymmetricKeyAlgorithm::AES128, AeadAlgorithm::Ocb));
-
         let seipd = if !self.encrypt.recipients.is_empty() {
             // If we have recipients, we choose the Seipd version purely based on their preferences
             *self.encrypt.seipd.first().unwrap_or(&Seipd::SEIPD1)
@@ -213,6 +202,28 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
             }
         };
 
+        let mechanism = match seipd {
+            Seipd::SEIPD1 => {
+                let symmetric_algo = *self
+                    .encrypt
+                    .symmetric_algorithms
+                    .first()
+                    .unwrap_or(&SymmetricKeyAlgorithm::default());
+
+                msg::EncryptionMechanism::SeipdV1(symmetric_algo)
+            }
+            Seipd::SEIPD2 => {
+                let aead_algo = *self
+                    .encrypt
+                    .aead_algorithms
+                    .first()
+                    .unwrap_or(&(SymmetricKeyAlgorithm::AES128, AeadAlgorithm::Ocb));
+
+                msg::EncryptionMechanism::SeipdV2(aead_algo.1, aead_algo.0)
+            }
+            Seipd::SED => unimplemented!("SED"),
+        };
+
         let skesk_passwords = self
             .encrypt
             .skesk_passwords
@@ -221,21 +232,24 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
             .collect();
 
         let session_key: Vec<u8> = msg::encrypt(
+            mechanism,
             self.encrypt.recipients,
             skesk_passwords,
             self.encrypt.sign.signers,
-            self.encrypt.sign.hash_algos.first(),
-            symmetric_algo,
-            aead_algo,
-            seipd,
+            self.encrypt.sign.hash_algos.first().copied(),
             self.plaintext,
             sink,
             self.encrypt.armor,
         )
-        .expect("FIXME");
+        .expect("FIXME")
+        .to_vec();
 
-        let alg_id = u8::from(symmetric_algo);
-        let session_key = sop::SessionKey::new(alg_id, session_key).expect("FIXME");
+        let alg_id = u8::from(match mechanism {
+            msg::EncryptionMechanism::SeipdV1(sym) | msg::EncryptionMechanism::SeipdV2(_, sym) => {
+                sym
+            }
+        });
+        let session_key = sop::SessionKey::new(alg_id, session_key)?;
 
         Ok(Some(session_key))
     }
