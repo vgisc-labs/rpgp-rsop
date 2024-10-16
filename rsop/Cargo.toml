@@ -13,7 +13,7 @@ default-run = "rsop"
 
 [dependencies]
 env_logger = ">=0.10, <0.12"
-rpgpie-sop = { version = "0.4.0-alpha.1", path = "../rpgpie-sop" }
+rpgpie-sop = { version = "0.4.0", path = "../rpgpie-sop" }
 sop = "0.7.2"
 
 [[bin]]
