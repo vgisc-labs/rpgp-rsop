@@ -10,7 +10,7 @@ steps:
     image: rust
     commands:
       - rustup component add clippy
-      - apt update -y -qq && apt install -y -qq --no-install-recommends libpcsclite-dev
+      - apt update -y -qq && apt install -y -qq --no-install-recommends libpcsclite-dev libdbus-1-dev
       - cargo --version
       - rustc --version
       - cargo clippy --no-deps
