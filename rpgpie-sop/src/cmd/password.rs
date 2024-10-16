@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{Keys, RPGSOP};
 use pgp::crypto::aead::AeadAlgorithm;
 use pgp::crypto::sym::SymmetricKeyAlgorithm;
 use pgp::types::{KeyVersion, PublicKeyTrait, S2kParams, SecretKeyTrait, StringToKey};
@@ -9,6 +8,8 @@ use rand::{thread_rng, Rng};
 use rpgpie::key::Tsk;
 use sop::plumbing::PasswordsAreHumanReadable;
 use sop::Password;
+
+use crate::{Keys, RPGSOP};
 
 pub(crate) struct ChangeKeyPassword {
     pw_old: Option<Password>,
