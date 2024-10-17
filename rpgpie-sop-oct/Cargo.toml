@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
+# SPDX-License-Identifier: CC0-1.0
+
+[package]
+name = "rpgpie-sop-oct"
+description = "Experimental OpenPGP card-only SOP implementation based on rpgpie"
+license = "MIT OR Apache-2.0"
+version = "0.1.0"
+authors = ["Heiko Schaefer <heiko@schaefer.name>"]
+edition = "2021"
+repository = "https://codeberg.org/heiko/rsop"
+
+[lib]
+
+[dependencies]
+card-backend-pcsc = "0.5"
+chrono = "0.4"
+hex = "0.4"
+log = "0.4"
+openpgp-card = "0.5"
+openpgp-card-rpgp = "0.2"
+openpgp-card-state = "0.3"
+pgp = "0.14"
+rand = "0.8"
+rand_core = "0.6"
+rpgpie = "0.4"
+rpgpie-sop = { path = "../rpgpie-sop", version = "0.4" }
+sop = "0.7.1"

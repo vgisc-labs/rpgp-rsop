@@ -5,6 +5,8 @@
 resolver = "2"
 members = [
     "rpgpie-sop",
+    "rpgpie-sop-oct",
     "rsop",
+    "rsop-oct",
 ]
 default-members = ["rsop"]

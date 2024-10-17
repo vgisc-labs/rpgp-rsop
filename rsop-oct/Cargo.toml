@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: Heiko Schaefer <heiko@schaefer.name>
+# SPDX-License-Identifier: CC0-1.0
+
+[package]
+name = "rsop-oct"
+description = "SOP CLI tool for OpenPGP card devices based on rPGP and rpgpie"
+license = "CC0-1.0"
+version = "0.1.0"
+authors = ["Heiko Schaefer <heiko@schaefer.name>"]
+edition = "2021"
+repository = "https://codeberg.org/heiko/rsop"
+
+[dependencies]
+env_logger = ">=0.10, <0.12"
+rpgpie-sop-oct = { version = "0.1.0", path = "../rpgpie-sop-oct" }
+sop = "0.7.2"
+
+[[bin]]
+name = "rsop-oct"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[profile.release]
+codegen-units = 1
+
+[features]
+default = ["cli"]
+cli = ["sop/cli"]
