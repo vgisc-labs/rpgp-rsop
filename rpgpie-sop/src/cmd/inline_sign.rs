@@ -113,7 +113,7 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
                 .collect()
         };
 
-        let mut signers: Vec<DataSigner> = vec![];
+        let mut datasigners: Vec<DataSigner> = vec![];
         for tsk in self.inline_sign.sign.signers {
             let mut s: Vec<DataSigner> = tsk.signing_capable_component_keys().collect();
 
@@ -124,7 +124,7 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
                 );
             }
 
-            signers.append(&mut s);
+            datasigners.append(&mut s);
         }
 
         let lit = match &self.inline_sign.mode {
@@ -133,31 +133,41 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
                 LiteralData::from_str("", &String::from_utf8(data).expect("FIXME"))
             }
             sop::ops::InlineSignAs::ClearSigned => {
-                let body = String::from_utf8(data).expect("foo");
+                let signers = |text: &[u8]| {
+                    let lit = Message::Literal(LiteralData::from_str(
+                        [],
+                        core::str::from_utf8(text).expect("FIXME"),
+                    ));
 
-                let s: Vec<_> = signers.into_iter().map(|s| (s, pws.as_slice())).collect();
-
-                // FIXME: This all is awkward and inefficient.
-                // We shouldn't use `ds.sign_csf`, and instead use a separate pure data signing function
-
-                // We don't use the `_text` input to the closure, but instead let `ds.sign_csf`
-                // normalize `body` for each signature.
-
-                let signers = |_text: &[u8]| {
                     let mut sigs = vec![];
 
-                    for x in s {
-                        let (ds, pw) = &x;
+                    for ds in datasigners {
+                        let mut sig = None;
 
-                        let csf = ds.sign_csf(&body, pw).expect("FIXME");
-                        let s = csf.signatures();
-                        sigs.push(s[0].signature.clone());
+                        // try all passwords for this DataSigner
+                        'pws: for pw in &pws {
+                            let res = ds.sign_msg(
+                                lit.clone(),
+                                || String::from_utf8_lossy(pw).to_string(),
+                                hash_algo,
+                            );
+
+                            if let Ok(Message::Signed { signature, .. }) = res {
+                                sig = Some(signature);
+                                break 'pws; // we found a working password for ds, stop trying more
+                            }
+                        }
+
+                        if let Some(s) = sig {
+                            sigs.push(s);
+                        }
                     }
 
                     Ok(sigs)
                 };
 
-                let csf = CleartextSignedMessage::new_many(&body, signers).expect("FIXME");
+                let text = core::str::from_utf8(&data).expect("FIXME");
+                let csf = CleartextSignedMessage::new_many(text, signers).expect("FIXME");
 
                 csf.to_armored_writer(&mut sink, ArmorOptions::default())
                     .expect("FIXME");
@@ -171,11 +181,11 @@ impl<'a> sop::ops::Ready for InlineSignReady<'a> {
 
         let lit_msg = Message::Literal(lit);
 
-        for signer in signers {
+        for ds in datasigners {
             let sig = pws
                 .iter()
                 .flat_map(|pw| {
-                    signer.sign_msg(
+                    ds.sign_msg(
                         lit_msg.clone(),
                         || String::from_utf8_lossy(pw).to_string(),
                         hash_algo,
