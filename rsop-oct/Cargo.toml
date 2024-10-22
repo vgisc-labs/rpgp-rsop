@@ -20,9 +20,6 @@ name = "rsop-oct"
 path = "src/main.rs"
 required-features = ["cli"]
 
-[profile.release]
-codegen-units = 1
-
 [features]
 default = ["cli"]
 cli = ["sop/cli"]

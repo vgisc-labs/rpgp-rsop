@@ -10,3 +10,6 @@ members = [
     "rsop-oct",
 ]
 default-members = ["rsop"]
+
+[profile.release]
+codegen-units = 1
