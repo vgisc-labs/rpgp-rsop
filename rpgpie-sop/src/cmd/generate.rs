@@ -18,6 +18,7 @@ const PROFILE_NISTP521: &str = "interop-testing-rfc6637-nistp521";
 
 const PROFILE_RFC9580_NISTP: &str = "interop-testing-rfc9580-nistp";
 const PROFILE_RFC9580_RSA: &str = "interop-testing-rfc9580-rsa";
+#[cfg(feature = "unstable-curve448")]
 const PROFILE_RFC9580_CV448: &str = "interop-testing-rfc9580-cv448";
 
 const PROFILES: &[(&str, &str)] = &[
@@ -34,6 +35,7 @@ const PROFILES: &[(&str, &str)] = &[
         PROFILE_RFC9580_NISTP,
         "Only for interop-testing: use algorithms from RFC 9580 with NIST P-256",
     ),
+    #[cfg(feature = "unstable-curve448")]
     (
         PROFILE_RFC9580_CV448,
         "Only for interop-testing: use algorithms from RFC 9580 with X448 and Ed25519",
@@ -79,6 +81,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
             PROFILE_RFC9580 => PROFILE_RFC9580,
             PROFILE_RFC9580_NISTP => PROFILE_RFC9580_NISTP,
             PROFILE_RFC9580_RSA => PROFILE_RFC9580_RSA,
+            #[cfg(feature = "unstable-curve448")]
             PROFILE_RFC9580_CV448 => PROFILE_RFC9580_CV448,
             _ => return Err(sop::errors::Error::UnsupportedProfile),
         };
@@ -181,6 +184,7 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 return Ok(Keys { keys: vec![tsk] });
             }
 
+            #[cfg(feature = "unstable-curve448")]
             PROFILE_RFC9580_CV448 => {
                 let tsk = Tsk::generate_v6(
                     pgp::KeyType::Ed25519, // FIXME: use Ed448 when rpgp supports it
