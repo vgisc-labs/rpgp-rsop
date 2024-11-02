@@ -55,7 +55,7 @@ impl sop::SOP<'_> for RPGSOP {
     fn revoke_key(
         &'_ self,
     ) -> sop::Result<Box<dyn sop::ops::RevokeKey<Self, Self::Certs, Self::Keys>>> {
-        todo!()
+        Ok(Box::new(cmd::revoke_key::RevokeKey::new()))
     }
 
     fn extract_cert(
