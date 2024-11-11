@@ -7,10 +7,10 @@ use std::io::BufRead;
 
 use pgp::packet::LiteralData;
 use pgp::{Any, Deserializable, Message};
-use rpgpie::key::checked::CheckedCertificate;
-use rpgpie::key::component::ComponentKeyPub;
-use rpgpie::key::Certificate;
-use rpgpie::msg::MessageResult;
+use rpgpie::certificate::Certificate;
+use rpgpie::certificate::Checked;
+use rpgpie::message::MessageResult;
+use rpgpie::ComponentKeyPub;
 
 use crate::{util, Certs, RPGSOP};
 
@@ -84,7 +84,7 @@ fn verify_msg(
     sink: &mut (dyn io::Write + Send + Sync),
     certs: &[Certificate],
 ) -> sop::Result<Vec<sop::ops::Verification>> {
-    let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], certs).expect("FIXME");
+    let mr = rpgpie::message::unpack(msg, &[], vec![], certs).expect("FIXME");
 
     if !mr.validated.is_empty() {
         sink.write_all(mr.cleartext.data()).expect("FIXME");
@@ -123,7 +123,7 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
                         .certs
                         .iter()
                         .flat_map(|c| {
-                            let cc: CheckedCertificate = c.into();
+                            let cc: Checked = c.into();
                             let verifiers = cc.valid_signing_capable_component_keys_at(
                                 &chrono::offset::Utc::now(),
                             );

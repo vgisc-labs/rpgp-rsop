@@ -6,11 +6,10 @@ use std::io;
 use chrono::{DateTime, Utc};
 use pgp::crypto::aead::AeadAlgorithm;
 use pgp::crypto::sym::SymmetricKeyAlgorithm;
-use rpgpie::key::checked::CheckedCertificate;
-use rpgpie::key::component::ComponentKeyPub;
-use rpgpie::key::Certificate;
-use rpgpie::msg;
+use rpgpie::certificate::{Certificate, Checked};
+use rpgpie::message;
 use rpgpie::policy::Seipd;
+use rpgpie::ComponentKeyPub;
 
 use crate::cmd::sign::Sign;
 use crate::{Certs, Keys, RPGSOP};
@@ -51,7 +50,7 @@ impl Encrypt {
     }
 
     fn add_cert(mut self: Box<Self>, cert: &Certificate) -> sop::Result<Box<Self>> {
-        let ccert: CheckedCertificate = cert.into();
+        let ccert: Checked = cert.into();
         let now: DateTime<Utc> = chrono::offset::Utc::now();
 
         // Handle recipient symmetric algorithm preferences, if any
@@ -210,7 +209,7 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
                     .first()
                     .unwrap_or(&SymmetricKeyAlgorithm::default());
 
-                msg::EncryptionMechanism::SeipdV1(symmetric_algo)
+                message::EncryptionMechanism::SeipdV1(symmetric_algo)
             }
             Seipd::SEIPD2 => {
                 let aead_algo = *self
@@ -219,7 +218,7 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
                     .first()
                     .unwrap_or(&(SymmetricKeyAlgorithm::AES128, AeadAlgorithm::Ocb));
 
-                msg::EncryptionMechanism::SeipdV2(aead_algo.1, aead_algo.0)
+                message::EncryptionMechanism::SeipdV2(aead_algo.1, aead_algo.0)
             }
             Seipd::SED => unimplemented!("SED"),
         };
@@ -231,7 +230,7 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
             .map(sop::plumbing::PasswordsAreHumanReadable::normalized)
             .collect();
 
-        let session_key: Vec<u8> = msg::encrypt(
+        let session_key: Vec<u8> = message::encrypt(
             mechanism,
             self.encrypt.recipients,
             skesk_passwords,
@@ -245,9 +244,8 @@ impl<'a> sop::ops::Ready<Option<sop::SessionKey>> for EncryptReady<'a> {
         .to_vec();
 
         let alg_id = u8::from(match mechanism {
-            msg::EncryptionMechanism::SeipdV1(sym) | msg::EncryptionMechanism::SeipdV2(_, sym) => {
-                sym
-            }
+            message::EncryptionMechanism::SeipdV1(sym)
+            | message::EncryptionMechanism::SeipdV2(_, sym) => sym,
         });
         let session_key = sop::SessionKey::new(alg_id, session_key)?;
 

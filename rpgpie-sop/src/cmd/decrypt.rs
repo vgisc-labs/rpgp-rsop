@@ -5,7 +5,8 @@ use std::io;
 use std::time::SystemTime;
 
 use pgp::composed::{Deserializable, Message};
-use rpgpie::key::Tsk;
+use rpgpie::message::{PkeskDecryptor, SoftkeyPkeskDecryptor};
+use rpgpie::tsk::Tsk;
 
 use crate::cmd::verify::Verify;
 use crate::{util, Certs, Keys, RPGSOP};
@@ -126,11 +127,19 @@ impl<'a> sop::ops::Ready<(Option<sop::SessionKey>, Vec<sop::ops::Verification>)>
         if let Some(Ok(msg)) = iter.next() {
             // FIXME: use provided session keys, if any
 
-            let key_passwords = self
+            let key_passwords: Vec<_> = self
                 .decrypt
                 .key_passwords
                 .iter()
                 .map(sop::plumbing::PasswordsAreHumanReadable::normalized)
+                .collect();
+
+            let pkesk_decryptors: Vec<_> = self
+                .decrypt
+                .decryption_keys
+                .iter()
+                .map(|tsk| SoftkeyPkeskDecryptor::new(tsk.clone(), key_passwords.clone()))
+                .map(|spd| Box::new(spd) as Box<dyn PkeskDecryptor>)
                 .collect();
 
             let skesk_passwords = self
@@ -140,10 +149,9 @@ impl<'a> sop::ops::Ready<(Option<sop::SessionKey>, Vec<sop::ops::Verification>)>
                 .map(sop::plumbing::PasswordsAreHumanReadable::normalized)
                 .collect();
 
-            let Ok(mr) = rpgpie::msg::unpack(
+            let Ok(mr) = rpgpie::message::unpack(
                 msg,
-                &self.decrypt.decryption_keys,
-                key_passwords,
+                pkesk_decryptors.as_slice(),
                 skesk_passwords,
                 &self.decrypt.verify.certs,
             ) else {

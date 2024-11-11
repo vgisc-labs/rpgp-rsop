@@ -8,7 +8,7 @@ use pgp::packet::{LiteralData, Packet};
 use pgp::ser::Serialize;
 use pgp::types::PublicKeyTrait;
 use pgp::{ArmorOptions, Deserializable, Message};
-use rpgpie::key::DataSigner;
+use rpgpie::tsk::DataSigner;
 
 use crate::cmd::sign::Sign;
 use crate::{Keys, RPGSOP};

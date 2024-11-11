@@ -7,8 +7,8 @@ use chrono::{DateTime, Utc};
 use pgp::crypto::hash::HashAlgorithm;
 use pgp::packet::LiteralData;
 use pgp::Message;
-use rpgpie::key::checked::CheckedCertificate;
-use rpgpie::key::{Certificate, Tsk};
+use rpgpie::certificate::{Certificate, Checked};
+use rpgpie::tsk::Tsk;
 
 use crate::{Keys, Sigs, RPGSOP};
 
@@ -40,7 +40,7 @@ impl Sign {
 
     fn add_signing_key(&mut self, tsk: &Tsk) -> sop::Result<()> {
         let cert = Certificate::from(tsk);
-        let ccert: CheckedCertificate = (&cert).into();
+        let ccert: Checked = (&cert).into();
 
         let now: DateTime<Utc> = chrono::offset::Utc::now();
 

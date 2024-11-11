@@ -7,7 +7,8 @@ mod util;
 use std::io;
 
 use pgp::Signature;
-use rpgpie::key::{Certificate, Tsk};
+use rpgpie::certificate::Certificate;
+use rpgpie::tsk::Tsk;
 use sop::ops::{CertifyUserID, MergeCerts, UpdateKey, ValidateUserID};
 
 #[derive(Clone, Copy, Default)]
@@ -153,7 +154,7 @@ impl sop::Save for Certs {
         armored: bool,
         sink: &mut (dyn io::Write + Send + Sync),
     ) -> sop::Result<()> {
-        Certificate::save(&self.certs, armored, sink).expect("FIXME");
+        Certificate::save_all(&self.certs, armored, sink).expect("FIXME");
 
         Ok(())
     }
@@ -181,7 +182,7 @@ impl sop::Save for Keys {
         armored: bool,
         sink: &mut (dyn io::Write + Send + Sync),
     ) -> sop::Result<()> {
-        Tsk::save(&self.keys, armored, sink).expect("FIXME");
+        Tsk::save_all(&self.keys, armored, sink).expect("FIXME");
 
         Ok(())
     }
@@ -193,7 +194,7 @@ impl sop::Load<'_, RPGSOP> for Sigs {
         mut source: &mut (dyn io::Read + Send + Sync),
         source_name: Option<String>,
     ) -> sop::Result<Self> {
-        let sigs = rpgpie::sig::load(&mut source).expect("FIXME");
+        let sigs = rpgpie::signature::load(&mut source).expect("FIXME");
 
         Ok(Sigs { sigs, source_name })
     }
@@ -209,7 +210,7 @@ impl sop::Save for Sigs {
         armored: bool,
         mut sink: &mut (dyn io::Write + Send + Sync),
     ) -> sop::Result<()> {
-        rpgpie::sig::save(&self.sigs, armored, &mut sink).expect("FIXME");
+        rpgpie::signature::save(&self.sigs, armored, &mut sink).expect("FIXME");
 
         Ok(())
     }

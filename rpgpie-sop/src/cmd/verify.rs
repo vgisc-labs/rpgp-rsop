@@ -4,8 +4,7 @@
 use std::io;
 use std::time::SystemTime;
 
-use rpgpie::key::checked::CheckedCertificate;
-use rpgpie::key::Certificate;
+use rpgpie::certificate::{Certificate, Checked};
 
 use crate::util::to_verification;
 use crate::{Certs, Sigs, RPGSOP};
@@ -89,7 +88,7 @@ impl sop::ops::VerifySignatures<'_> for VerifySignatures<'_> {
 
         for sig in &self.signatures.sigs {
             for cert in &self.verify.certs {
-                let ccert: CheckedCertificate = cert.into();
+                let ccert = Checked::from(cert);
 
                 // Verify at signature creation time.
                 // FIXME: does the signature need to be valid "now", as well?
