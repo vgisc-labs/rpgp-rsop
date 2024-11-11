@@ -95,6 +95,9 @@ impl<'a> sop::ops::RevokeKey<'a, RPGSOP, Certs, Keys> for RevokeKey {
             results.push(spk.into());
         }
 
-        Ok(Certs { certs: results })
+        Ok(Certs {
+            certs: results,
+            source_name: None,
+        })
     }
 }

@@ -130,6 +130,9 @@ impl<'a> sop::ops::ChangeKeyPassword<'a, RPGSOP, Keys> for ChangeKeyPassword {
             res.push(ssk.into());
         }
 
-        Ok(Keys { keys: res })
+        Ok(Keys {
+            keys: res,
+            source_name: None,
+        })
     }
 }

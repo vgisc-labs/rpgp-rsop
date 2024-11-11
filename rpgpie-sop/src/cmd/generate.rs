@@ -152,7 +152,10 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 )
                 .expect("FIXME");
 
-                return Ok(Keys { keys: vec![tsk] });
+                return Ok(Keys {
+                    keys: vec![tsk],
+                    source_name: None,
+                });
             }
 
             PROFILE_RFC9580_NISTP => {
@@ -165,7 +168,10 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 )
                 .expect("FIXME");
 
-                return Ok(Keys { keys: vec![tsk] });
+                return Ok(Keys {
+                    keys: vec![tsk],
+                    source_name: None,
+                });
             }
 
             PROFILE_RFC9580_RSA => {
@@ -178,7 +184,10 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 )
                 .expect("FIXME");
 
-                return Ok(Keys { keys: vec![tsk] });
+                return Ok(Keys {
+                    keys: vec![tsk],
+                    source_name: None,
+                });
             }
 
             PROFILE_RFC9580_CV448 => {
@@ -191,7 +200,10 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
                 )
                 .expect("FIXME");
 
-                return Ok(Keys { keys: vec![tsk] });
+                return Ok(Keys {
+                    keys: vec![tsk],
+                    source_name: None,
+                });
             }
 
             _ => return Err(sop::errors::Error::UnsupportedProfile),
@@ -210,6 +222,9 @@ impl<'a> sop::ops::GenerateKey<'a, RPGSOP, Keys> for GenerateKey {
         )
         .map_err(std::io::Error::other)?;
 
-        Ok(Keys { keys: vec![tsk] })
+        Ok(Keys {
+            keys: vec![tsk],
+            source_name: None,
+        })
     }
 }

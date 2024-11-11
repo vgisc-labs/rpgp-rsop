@@ -15,6 +15,7 @@ impl sop::ops::ExtractCert<'_, RPGSOP, Certs, Keys> for ExtractCert {
     fn keys(self: Box<Self>, keys: &Keys) -> sop::Result<Certs> {
         Ok(Certs {
             certs: keys.keys.iter().map(Into::into).collect(),
+            source_name: None,
         })
     }
 }

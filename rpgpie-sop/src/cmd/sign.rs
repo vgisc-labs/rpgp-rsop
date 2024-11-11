@@ -159,6 +159,12 @@ impl<'a> sop::ops::Sign<'a, RPGSOP, Keys, Sigs> for Sign {
 
         let hash_algo_id = u8::from(hash_algo);
 
-        Ok((hash_algo_id.into(), Sigs { sigs }))
+        Ok((
+            hash_algo_id.into(),
+            Sigs {
+                sigs,
+                source_name: None,
+            },
+        ))
     }
 }

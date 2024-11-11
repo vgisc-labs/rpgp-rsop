@@ -8,6 +8,7 @@ use std::io;
 
 use pgp::Signature;
 use rpgpie::key::{Certificate, Tsk};
+use sop::ops::{CertifyUserID, MergeCerts, UpdateKey, ValidateUserID};
 
 #[derive(Clone, Copy, Default)]
 pub struct RPGSOP {}
@@ -17,14 +18,17 @@ const SOP: RPGSOP = RPGSOP {};
 
 pub struct Certs {
     certs: Vec<Certificate>,
+    source_name: Option<String>,
 }
 
 pub struct Keys {
     keys: Vec<Tsk>,
+    source_name: Option<String>,
 }
 
 pub struct Sigs {
     sigs: Vec<Signature>,
+    source_name: Option<String>,
 }
 
 impl sop::SOP<'_> for RPGSOP {
@@ -107,16 +111,39 @@ impl sop::SOP<'_> for RPGSOP {
     fn inline_sign(&'_ self) -> sop::Result<Box<dyn sop::ops::InlineSign<Self, Self::Keys> + '_>> {
         Ok(Box::new(cmd::inline_sign::InlineSign::new()))
     }
+
+    fn update_key(&'_ self) -> sop::Result<Box<dyn UpdateKey<Self, Self::Certs, Self::Keys> + '_>> {
+        todo!()
+    }
+
+    fn merge_certs(&'_ self) -> sop::Result<Box<dyn MergeCerts<Self, Self::Certs> + '_>> {
+        todo!()
+    }
+
+    fn certify_userid(
+        &'_ self,
+    ) -> sop::Result<Box<dyn CertifyUserID<Self, Self::Certs, Self::Keys> + '_>> {
+        todo!()
+    }
+
+    fn validate_userid(&'_ self) -> sop::Result<Box<dyn ValidateUserID<Self, Self::Certs> + '_>> {
+        todo!()
+    }
 }
 
 impl sop::Load<'_, RPGSOP> for Certs {
     fn from_reader(
         _sop: &RPGSOP,
         mut source: &mut (dyn io::Read + Send + Sync),
+        source_name: Option<String>,
     ) -> sop::Result<Self> {
         let certs = Certificate::load(&mut source).expect("FIXME");
 
-        Ok(Certs { certs })
+        Ok(Certs { certs, source_name })
+    }
+
+    fn source_name(&self) -> Option<&str> {
+        self.source_name.as_deref()
     }
 }
 
@@ -136,10 +163,15 @@ impl sop::Load<'_, RPGSOP> for Keys {
     fn from_reader(
         _sop: &'_ RPGSOP,
         mut source: &mut (dyn io::Read + Send + Sync),
+        source_name: Option<String>,
     ) -> sop::Result<Self> {
         let keys = Tsk::load(&mut source).expect("FIXME");
 
-        Ok(Keys { keys })
+        Ok(Keys { keys, source_name })
+    }
+
+    fn source_name(&self) -> Option<&str> {
+        self.source_name.as_deref()
     }
 }
 
@@ -159,10 +191,15 @@ impl sop::Load<'_, RPGSOP> for Sigs {
     fn from_reader(
         _sop: &'_ RPGSOP,
         mut source: &mut (dyn io::Read + Send + Sync),
+        source_name: Option<String>,
     ) -> sop::Result<Self> {
         let sigs = rpgpie::sig::load(&mut source).expect("FIXME");
 
-        Ok(Sigs { sigs })
+        Ok(Sigs { sigs, source_name })
+    }
+
+    fn source_name(&self) -> Option<&str> {
+        self.source_name.as_deref()
     }
 }
 
