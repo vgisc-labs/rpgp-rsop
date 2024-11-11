@@ -4,7 +4,7 @@
 use std::collections::VecDeque;
 
 use pgp::crypto::ecc_curve::ECCCurve;
-use rpgpie::key::Tsk;
+use rpgpie::tsk::Tsk;
 
 use crate::{Keys, RPGSOP};
 

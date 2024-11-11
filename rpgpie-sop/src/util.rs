@@ -5,9 +5,9 @@ use std::time::SystemTime;
 
 use pgp::packet::SignatureType;
 use pgp::Signature;
-use rpgpie::key::component::ComponentKeyPub;
-use rpgpie::key::Certificate;
-use rpgpie::msg::MessageResult;
+use rpgpie::certificate::Certificate;
+use rpgpie::message::MessageResult;
+use rpgpie::ComponentKeyPub;
 
 pub(crate) fn to_verification(
     signature: &Signature,

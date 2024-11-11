@@ -5,7 +5,7 @@ use pgp::crypto::aead::AeadAlgorithm;
 use pgp::crypto::sym::SymmetricKeyAlgorithm;
 use pgp::types::{KeyVersion, PublicKeyTrait, S2kParams, SecretKeyTrait, StringToKey};
 use rand::{thread_rng, Rng};
-use rpgpie::key::Tsk;
+use rpgpie::tsk::Tsk;
 use sop::plumbing::PasswordsAreHumanReadable;
 use sop::Password;
 
