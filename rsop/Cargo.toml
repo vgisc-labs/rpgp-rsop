@@ -5,7 +5,7 @@
 name = "rsop"
 description = "SOP CLI tool based on rpgp and rpgpie"
 license = "CC0-1.0"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Heiko Schaefer <heiko@schaefer.name>"]
 edition = "2021"
 repository = "https://codeberg.org/heiko/rsop"
@@ -13,7 +13,7 @@ default-run = "rsop"
 
 [dependencies]
 env_logger = ">=0.10, <0.12"
-rpgpie-sop = { version = "0.4.1", path = "../rpgpie-sop" }
+rpgpie-sop = { version = "0.4.2", path = "../rpgpie-sop" }
 sop = "0.8"
 
 [[bin]]
