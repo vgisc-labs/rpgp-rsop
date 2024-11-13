@@ -99,7 +99,7 @@ impl sop::SOP<'_> for RPGSOP {
     }
 
     fn inline_detach(&'_ self) -> sop::Result<Box<dyn sop::ops::InlineDetach<Self::Sigs>>> {
-        todo!()
+        Ok(Box::new(cmd::detach::InlineDetach::new()))
     }
 
     fn inline_verify(

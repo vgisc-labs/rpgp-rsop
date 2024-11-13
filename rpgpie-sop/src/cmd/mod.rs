@@ -4,6 +4,7 @@
 pub(crate) mod armor;
 pub(crate) mod dearmor;
 pub(crate) mod decrypt;
+pub(crate) mod detach;
 pub(crate) mod encrypt;
 pub(crate) mod extract_cert;
 pub(crate) mod generate;
