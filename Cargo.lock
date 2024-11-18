@@ -1857,7 +1857,7 @@ dependencies = [
  "rand",
  "rand_core 0.6.4",
  "rpgpie",
- "sop 0.8.0",
+ "sop",
 ]
 
 [[package]]
@@ -1876,7 +1876,7 @@ dependencies = [
  "rand_core 0.6.4",
  "rpgpie",
  "rpgpie-sop",
- "sop 0.7.2",
+ "sop",
 ]
 
 [[package]]
@@ -1905,7 +1905,7 @@ version = "0.4.3"
 dependencies = [
  "env_logger",
  "rpgpie-sop",
- "sop 0.8.0",
+ "sop",
 ]
 
 [[package]]
@@ -1914,7 +1914,7 @@ version = "0.1.0"
 dependencies = [
  "env_logger",
  "rpgpie-sop-oct",
- "sop 0.7.2",
+ "sop",
 ]
 
 [[package]]
@@ -2133,20 +2133,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "sop"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77468b8c590d65730f3b3905427612439f0e0cd5b967a48615a444546f2ed9e0"
-dependencies = [
- "anyhow",
- "chrono",
- "clap",
- "clap_complete",
- "memsec",
- "thiserror",
-]
 
 [[package]]
 name = "sop"
