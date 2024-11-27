@@ -86,12 +86,12 @@ fn verify_msg(
 ) -> sop::Result<Vec<sop::ops::Verification>> {
     let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], certs).expect("FIXME");
 
-    if mr.validated.is_empty() {
-        Err(sop::errors::Error::NoSignature)
-    } else {
+    if !mr.validated.is_empty() {
         sink.write_all(mr.cleartext.data()).expect("FIXME");
 
         Ok(util::result_to_verifications(&mr))
+    } else {
+        Err(sop::errors::Error::NoSignature)
     }
 }
 
@@ -143,9 +143,7 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
                         })
                         .collect();
 
-                    if validated.is_empty() {
-                        Err(sop::errors::Error::NoSignature)
-                    } else {
+                    if !validated.is_empty() {
                         let text = csf.signed_text();
                         sink.write_all(text.as_bytes()).expect("FIXME");
 
@@ -155,6 +153,8 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
                             validated,
                         };
                         Ok(util::result_to_verifications(&mr))
+                    } else {
+                        Err(sop::errors::Error::NoSignature)
                     }
                 }
                 Any::Message(msg) => verify_msg(msg, sink, &self.inline_verify.certs),
