@@ -147,15 +147,12 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
                         let text = csf.signed_text();
                         sink.write_all(text.as_bytes()).expect("FIXME");
 
-                        let mr = MessageResult {
-                            session_key: None,
-                            cleartext: LiteralData::from_str("", &text),
-                            validated,
-                        };
-                        Ok(util::result_to_verifications(&mr))
-                    } else {
-                        Err(sop::errors::Error::NoSignature)
-                    }
+                    let mr = MessageResult {
+                        session_key: None,
+                        cleartext: LiteralData::from_str("", &text),
+                        validated,
+                    };
+                    Ok(util::result_to_verifications(&mr))
                 }
                 Any::Message(msg) => verify_msg(msg, sink, &self.inline_verify.certs),
                 _ => panic!("unexpected data type"),
