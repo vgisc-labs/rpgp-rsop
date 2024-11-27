@@ -85,11 +85,12 @@ fn verify_msg(
     certs: &[Certificate],
 ) -> sop::Result<Vec<sop::ops::Verification>> {
     let mr = rpgpie::msg::unpack(msg, &[], vec![], vec![], certs).expect("FIXME");
-    sink.write_all(mr.cleartext.data()).expect("FIXME");
 
     if mr.validated.is_empty() {
         Err(sop::errors::Error::NoSignature)
     } else {
+        sink.write_all(mr.cleartext.data()).expect("FIXME");
+
         Ok(util::result_to_verifications(&mr))
     }
 }
@@ -143,18 +144,18 @@ impl sop::ops::Ready<Vec<sop::ops::Verification>> for InlineVerifyReady<'_> {
                         .collect();
 
                     if validated.is_empty() {
-                        return Err(sop::errors::Error::NoSignature);
+                        Err(sop::errors::Error::NoSignature)
+                    } else {
+                        let text = csf.signed_text();
+                        sink.write_all(text.as_bytes()).expect("FIXME");
+
+                        let mr = MessageResult {
+                            session_key: None,
+                            cleartext: LiteralData::from_str("", &text),
+                            validated,
+                        };
+                        Ok(util::result_to_verifications(&mr))
                     }
-
-                    let text = csf.signed_text();
-                    sink.write_all(text.as_bytes()).expect("FIXME");
-
-                    let mr = MessageResult {
-                        session_key: None,
-                        cleartext: LiteralData::from_str("", &text),
-                        validated,
-                    };
-                    Ok(util::result_to_verifications(&mr))
                 }
                 Any::Message(msg) => verify_msg(msg, sink, &self.inline_verify.certs),
                 _ => panic!("unexpected data type"),
